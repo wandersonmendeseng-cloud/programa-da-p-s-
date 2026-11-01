@@ -654,10 +654,16 @@
       text-align: right;
     }
 
+    .card .prod { display: grid; gap: 4px; font-size: 0.86rem; color: var(--muted); overflow-wrap: anywhere; }
+    .card .prod i { color: var(--fg); font-style: normal; font-weight: 600; }
+    .card .prod a { color: var(--accent); text-decoration: none; }
+    .card .prod a:hover { text-decoration: underline; }
+
     /* Grid de 2 Colunas */
     .two {
       display: grid;
       gap: 20px;
+      align-items: start;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
     .box { display: grid; gap: 12px; align-content: start; }
@@ -760,6 +766,7 @@
             <option value="nao">Mestrado concluído</option>
           </select>
           <select id="f-linha" aria-label="Linha de pesquisa"><option value="">Todas as linhas</option></select>
+          <select id="f-area" aria-label="Área de concentração"><option value="">Todas as áreas</option></select>
           <label class="check"><input type="checkbox" id="f-mentor"> Só quem aceita mentoria</label>
         </div>
       </div>
@@ -799,6 +806,14 @@
         <div class="box">
           <h3>Linha de pesquisa no mestrado</h3>
           <div class="bars" id="bars-linha"></div>
+        </div>
+        <div class="box">
+          <h3>Área de concentração</h3>
+          <div class="bars" id="bars-area"></div>
+        </div>
+        <div class="box">
+          <h3>Produção informada pelos egressos</h3>
+          <div class="bars" id="bars-prod"></div>
         </div>
         <div class="box">
           <h3>Egressos por ano de defesa</h3>
@@ -1016,11 +1031,28 @@
     let OPS = [];
     let modoSimulacao = false;
     let map, markersLayer;
-    let state = { q: "", setor: "", phd: "", linha: "", mentor: false, place: "" };
+    let state = { q: "", setor: "", phd: "", linha: "", area: "", mentor: false, place: "" };
 
     const $ = id => document.getElementById(id);
     const norm = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
     const esc = t => { const d = document.createElement("div"); d.textContent = t || ""; return d.innerHTML; };
+    // Para uso dentro de atributos HTML (href): também protege as aspas
+    const escAttr = t => esc(t).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    // Só aceita links http/https; completa "linkedin.com/in/fulano" com https://
+    const safeUrl = u => {
+      u = String(u || "").trim();
+      if (!u) return "";
+      if (/^https?:\/\//i.test(u)) return u;
+      if (/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(u)) return "https://" + u;
+      return "";
+    };
+    // ORCID no formato 0000-0000-0000-0000 (aceita o link completo)
+    const orcidId = s => { const m = String(s || "").match(/\d{4}-\d{4}-\d{4}-\d{3}[\dXx]/); return m ? m[0].toUpperCase() : ""; };
+    // Lista de DOIs (aceita vários, separados por linha, espaço ou ponto e vírgula; aceita o link doi.org)
+    const doiList = s => {
+      const m = String(s || "").match(/10\.\d{4,9}\/[^\s;"<>]+/g) || [];
+      return [...new Set(m.map(d => d.replace(/[.,)\]]+$/, "")))];
+    };
 
     // Animação de Contagem Progressiva nos Indicadores
     function animateCounter(el, target) {
@@ -1105,6 +1137,7 @@
       if (state.phd === "sim" && !r.phd) return false;
       if (state.phd === "nao" && r.phd) return false;
       if (state.linha && r.linha !== state.linha) return false;
+      if (state.area && r.area !== state.area) return false;
       if (state.mentor && !r.mentor) return false;
       if (!skipPlace && state.place && norm(r.cidade) !== state.place) return false;
       return true;
@@ -1150,7 +1183,7 @@
           weight: 2.5,
           fillOpacity: 0.9
         });
-        circle.bindTooltip(`<b>${g.label}</b>: ${g.n} egresso(s)`);
+        circle.bindTooltip(`<b>${esc(g.label)}</b>: ${g.n} egresso(s)`);
         circle.on("click", () => { state.place = active ? "" : k; skipFit = true; renderAll(); });
         markersLayer.addLayer(circle);
         pts.push(g.xy);
@@ -1179,7 +1212,7 @@
     function renderCards() {
       const list = DATA.filter(r => matches(r)).sort((a, b) => b.ano - a.ano);
       $("count").textContent = `${list.length} ${list.length === 1 ? "egresso listado" : "egressos listados"}`;
-      $("clear").hidden = !(state.q || state.setor || state.phd || state.linha || state.mentor || state.place);
+      $("clear").hidden = !(state.q || state.setor || state.phd || state.linha || state.area || state.mentor || state.place);
 
       const box = $("cards");
       if (!DATA.length) {
@@ -1199,6 +1232,9 @@
       box.innerHTML = list.map((r, idx) => {
         const phdLabel = r.phd === "UERJ" ? "Doutorado na UERJ" : r.phd ? "Doutorado externo" : "";
         const role = [r.cargo, r.org].filter(Boolean).join(" · ");
+        const li = safeUrl(r.linkedin), la = safeUrl(r.lattes);
+        const orcid = orcidId(r.orcid);
+        const dois = doiList(r.doi);
         return `
           <article class="card" style="animation-delay:${idx * 0.06}s">
             <div class="top">
@@ -1210,14 +1246,21 @@
             <div class="tags">
               ${r.setor ? `<span class="tag">${esc(r.setor)}</span>` : ""}
               ${r.linha ? `<span class="tag">${esc(r.linha)}</span>` : ""}
+              ${r.area ? `<span class="tag">${esc(r.area)}</span>` : ""}
               ${phdLabel ? `<span class="tag">${phdLabel}</span>` : ""}
               ${r.mentor ? `<span class="tag m">✓ Aceita mentoria</span>` : ""}
             </div>
             ${r.titulo ? `<div class="thesis"><i>Dissertação:</i> ${esc(r.titulo)}${r.orientador ? `<br><i>Orientação:</i> ${esc(r.orientador)}` : ""}</div>` : ""}
-            ${(r.linkedin || r.lattes) ? `
+            ${(dois.length || r.patente) ? `
+              <div class="prod">
+                ${dois.length ? `<div><i>Artigos (DOI):</i> ${dois.map(d => `<a href="https://doi.org/${escAttr(encodeURI(d))}" target="_blank" rel="noopener noreferrer">${esc(d)}</a>`).join(" · ")}</div>` : ""}
+                ${r.patente ? `<div><i>Patente:</i> ${esc(r.patente)}</div>` : ""}
+              </div>` : ""}
+            ${(li || la || orcid) ? `
               <div class="links">
-                ${r.linkedin ? `<a href="${esc(r.linkedin)}" target="_blank" rel="noopener">LinkedIn ↗</a>` : ""}
-                ${r.lattes ? `<a href="${esc(r.lattes)}" target="_blank" rel="noopener">Currículo Lattes ↗</a>` : ""}
+                ${li ? `<a href="${escAttr(li)}" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>` : ""}
+                ${la ? `<a href="${escAttr(la)}" target="_blank" rel="noopener noreferrer">Currículo Lattes ↗</a>` : ""}
+                ${orcid ? `<a href="https://orcid.org/${orcid}" target="_blank" rel="noopener noreferrer">ORCID ↗</a>` : ""}
               </div>` : ""}
           </article>`;
       }).join("");
@@ -1248,6 +1291,12 @@
       };
       renderBars("bars-setor", tally("setor"));
       renderBars("bars-linha", tally("linha"));
+      renderBars("bars-area", tally("area"));
+      renderBars("bars-prod", [
+        ["Com artigo (DOI)", rows.filter(r => doiList(r.doi).length).length],
+        ["Com patente", rows.filter(r => r.patente).length],
+        ["Com ORCID", rows.filter(r => orcidId(r.orcid)).length]
+      ]);
       const anos = tally("ano").sort((a, b) => String(a[0]).localeCompare(String(b[0])));
       renderBars("bars-ano", anos);
     }
@@ -1282,6 +1331,7 @@
       };
       fill("f-setor", "Todos os setores", "setor");
       fill("f-linha", "Todas as linhas", "linha");
+      fill("f-area", "Todas as áreas", "area");
     }
 
     function renderAll() {
@@ -1298,7 +1348,7 @@
       const btn = $("btn-simular");
       btn.classList.toggle("active", modoSimulacao);
       $("sim-label").textContent = modoSimulacao ? "Simulação Ativa" : "Simular Rede";
-      state = { q: "", setor: "", phd: "", linha: "", mentor: false, place: "" };
+      state = { q: "", setor: "", phd: "", linha: "", area: "", mentor: false, place: "" };
       updateSelectOptions();
       renderAll();
     };
@@ -1357,10 +1407,11 @@
       $("f-setor").onchange = e => { state.setor = e.target.value; renderAll(); };
       $("f-phd").onchange = e => { state.phd = e.target.value; renderAll(); };
       $("f-linha").onchange = e => { state.linha = e.target.value; renderAll(); };
+      $("f-area").onchange = e => { state.area = e.target.value; renderAll(); };
       $("f-mentor").onchange = e => { state.mentor = e.target.checked; renderAll(); };
       $("clear").onclick = () => {
-        state = { q: "", setor: "", phd: "", linha: "", mentor: false, place: "" };
-        $("q").value = ""; $("f-setor").value = ""; $("f-phd").value = ""; $("f-linha").value = ""; $("f-mentor").checked = false;
+        state = { q: "", setor: "", phd: "", linha: "", area: "", mentor: false, place: "" };
+        $("q").value = ""; $("f-setor").value = ""; $("f-phd").value = ""; $("f-linha").value = ""; $("f-area").value = ""; $("f-mentor").checked = false;
         renderAll();
       };
 
@@ -1374,7 +1425,8 @@
               setor: o.setor || "Outra área", org: o.organizacao || o.empresa || "", cargo: o.cargo || "",
               phd: norm(o.doutorado).startsWith("sim") ? (norm(o.doutorado).includes("uerj") ? "UERJ" : "outra") : "",
               titulo: o.titulo || "", linha: o.linha || "", orientador: o.orientador || "",
-              mentor: norm(o.mentoria).startsWith("sim"), linkedin: o.linkedin || "", lattes: o.lattes || ""
+              mentor: norm(o.mentoria).startsWith("sim"), linkedin: o.linkedin || "", lattes: o.lattes || "",
+              area: o.area || "", orcid: o.orcid || "", doi: o.doi || "", patente: o.patente || ""
             }));
             DATA = DATA_OFICIAL;
             $("btn-simular").style.display = "none";

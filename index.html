@@ -892,8 +892,87 @@
       "cachoeiras de macacu": [-22.4636, -42.6531],
       "sao paulo": [-23.5505, -46.6333],
       "campinas": [-22.9099, -47.0626],
-      "belo horizonte": [-19.9167, -43.9345]
+      "belo horizonte": [-19.9167, -43.9345],
+      "duque de caxias": [-22.7856, -43.3117],
+      "sao goncalo": [-22.8269, -43.0539],
+      "nova iguacu": [-22.7592, -43.4510],
+      "marica": [-22.9194, -42.8186],
+      "araruama": [-22.8729, -42.3432],
+      "buzios": [-22.7469, -41.8819],
+      "armacao dos buzios": [-22.7469, -41.8819],
+      "rio das ostras": [-22.5269, -41.9450],
+      "barra mansa": [-22.5441, -44.1714],
+      "angra dos reis": [-23.0067, -44.3181],
+      "paraty": [-23.2178, -44.7131],
+      "itaperuna": [-21.2050, -41.8878],
+      "tres rios": [-22.1169, -43.2089],
+      "bom jardim": [-22.1544, -42.4219],
+      "curitiba": [-25.4284, -49.2733],
+      "porto alegre": [-30.0346, -51.2177],
+      "vitoria": [-20.3155, -40.3128],
+      "brasilia": [-15.7939, -47.8828],
+      "salvador": [-12.9777, -38.5016],
+      "recife": [-8.0476, -34.8770]
     };
+
+    /* Localização automática de cidades que não estão na lista acima.
+       Usa o OpenStreetMap (Nominatim), no máximo 1 consulta por segundo,
+       e guarda o resultado no navegador para não consultar de novo. */
+    const GEO_KEY = "ppgctm_geo_v1";
+    let geoCache = {};
+    try { geoCache = JSON.parse(localStorage.getItem(GEO_KEY) || "{}") || {}; } catch (e) { geoCache = {}; }
+    const geoQueue = [];
+    const geoQueued = new Set();
+    let geoRunning = false;
+    let userInteracted = false;
+    let skipFit = false; // não reenquadra o mapa quando a pessoa só clica numa cidade
+
+    function saveGeo() { try { localStorage.setItem(GEO_KEY, JSON.stringify(geoCache)); } catch (e) {} }
+
+    function getXY(k, r) {
+      if (COORD[k]) return COORD[k];
+      const gk = k + "|" + norm(r.uf);
+      if (Array.isArray(geoCache[gk])) return geoCache[gk];
+      if (!(gk in geoCache) && !geoQueued.has(gk)) {
+        geoQueued.add(gk);
+        geoQueue.push({ gk: gk, cidade: r.cidade, uf: r.uf });
+        runGeoQueue();
+      }
+      return undefined;
+    }
+
+    function runGeoQueue() {
+      if (geoRunning || !geoQueue.length) return;
+      geoRunning = true;
+      setTimeout(async function next() {
+        const item = geoQueue.shift();
+        if (!item) { geoRunning = false; return; }
+        try {
+          const uf = String(item.uf || "").trim();
+          const brasil = /^[a-z]{2}$/i.test(uf);
+          const q = brasil ? `${item.cidade}, ${uf}, Brasil` : [item.cidade, uf].filter(Boolean).join(", ");
+          const res = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=pt-BR&q=" + encodeURIComponent(q));
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          const js = await res.json();
+          const lat = js && js[0] ? parseFloat(js[0].lat) : NaN;
+          const lon = js && js[0] ? parseFloat(js[0].lon) : NaN;
+          geoCache[item.gk] = (isNaN(lat) || isNaN(lon)) ? null : [lat, lon];
+          saveGeo();
+          renderMap(!userInteracted);
+        } catch (e) { /* sem rede ou limite do serviço: tenta de novo na próxima visita */ }
+        setTimeout(next, 1200);
+      }, 50);
+    }
+
+    function fitMap(pts, fit) {
+      if (!map || !fit) return;
+      map.invalidateSize();
+      const sede = pts[0], outros = pts.slice(1);
+      if (!outros.length) { map.setView([-22.35, -42.65], 7); return; }
+      // Enquadra a região da sede; cidades muito distantes (ex.: exterior) não encolhem o mapa
+      const perto = outros.filter(p => Math.abs(p[0] - sede[0]) <= 9 && Math.abs(p[1] - sede[1]) <= 9);
+      map.fitBounds(perto.length ? [sede].concat(perto) : outros, { padding: [32, 32], maxZoom: 10 });
+    }
 
     // Dados institucionais anônimos APENAS se o botão "Simular Rede" for clicado durante a apresentação
     const DADOS_SIMULACAO = [
@@ -936,10 +1015,28 @@
     // Inicializa Mapa Leaflet
     function initMap() {
       map = L.map("map", { scrollWheelZoom: false }).setView([-22.35, -42.65], 7);
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-        attribution: "&copy; OpenStreetMap"
+      const attrib = "&copy; <a href='https://www.openstreetmap.org/copyright' target='_blank' rel='noopener'>OpenStreetMap</a>";
+      const primary = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+        attribution: attrib + " &copy; CARTO", subdomains: "abcd", maxZoom: 19
       }).addTo(map);
+      // Se o mapa de fundo principal não carregar, troca para o padrão do OpenStreetMap
+      let tilesOk = 0, tilesErr = 0, trocou = false;
+      primary.on("tileload", () => { tilesOk++; });
+      primary.on("tileerror", () => {
+        tilesErr++;
+        if (!trocou && tilesOk === 0 && tilesErr >= 3) {
+          trocou = true;
+          map.removeLayer(primary);
+          L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: attrib, maxZoom: 19 }).addTo(map);
+        }
+      });
       markersLayer = L.layerGroup().addTo(map);
+
+      // Corrige o tamanho do mapa quando a página é redimensionada ou termina de carregar
+      const el = map.getContainer();
+      ["pointerdown", "wheel", "touchstart"].forEach(ev => el.addEventListener(ev, () => { userInteracted = true; }, { passive: true }));
+      if (window.ResizeObserver) new ResizeObserver(() => map.invalidateSize()).observe(el);
+      window.addEventListener("load", () => map.invalidateSize());
     }
 
     // Leitor de CSV do Google Sheets
@@ -988,13 +1085,14 @@
       animateCounter($("n-cities"), places.size);
     }
 
-    function renderMap() {
+    function renderMap(fit = true) {
       markersLayer.clearLayers();
       const groups = {};
+      const pts = [[-22.2819, -42.5311]];
       DATA.filter(r => matches(r, true)).forEach(r => {
         const k = norm(r.cidade);
         if (!k) return;
-        if (!groups[k]) groups[k] = { label: `${r.cidade}${r.uf ? ", " + r.uf : ""}`, n: 0, xy: COORD[k] };
+        if (!groups[k]) groups[k] = { label: `${r.cidade}${r.uf ? ", " + r.uf : ""}`, n: 0, xy: getXY(k, r) };
         groups[k].n++;
       });
 
@@ -1020,9 +1118,13 @@
           fillOpacity: 0.9
         });
         circle.bindTooltip(`<b>${g.label}</b>: ${g.n} egresso(s)`);
-        circle.on("click", () => { state.place = active ? "" : k; renderAll(); });
+        circle.on("click", () => { state.place = active ? "" : k; skipFit = true; renderAll(); });
         markersLayer.addLayer(circle);
+        pts.push(g.xy);
       });
+      const doFit = fit && !skipFit;
+      skipFit = false;
+      fitMap(pts, doFit);
 
       const out = $("chips-out");
       out.innerHTML = "";
@@ -1036,7 +1138,7 @@
         b.type = "button";
         b.className = "chip" + (state.place === k ? " on" : "");
         b.textContent = `${groups[k].label} · ${groups[k].n}`;
-        b.onclick = () => { state.place = state.place === k ? "" : k; renderAll(); };
+        b.onclick = () => { state.place = state.place === k ? "" : k; skipFit = true; renderAll(); };
         out.appendChild(b);
       });
     }

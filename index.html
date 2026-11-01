@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>Rede de Egressos PPG-CTM</title>
+  <meta name="description" content="Rede de egressos do mestrado em Ciência e Tecnologia de Materiais do IPRJ-UERJ: onde moram, onde trabalham e como podem ajudar quem vem depois.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="proto" id="aviso-exemplo" hidden>Dados de exemplo (fictícios)</span>
+    <h1>Rede de Egressos<br><em>PPG-CTM</em> · IPRJ-UERJ</h1>
+    <p>Quem passou pelo mestrado em Ciência e Tecnologia de Materiais: onde mora, onde trabalha, se seguiu para o doutorado e o que pode contar para quem vem depois.</p>
+    <div class="figures" aria-live="polite">
+      <div class="fig"><b id="n-total">0</b><span>egressos na rede</span></div>
+      <div class="fig"><b id="n-area">0</b><span>atuam com materiais ou modelagem</span></div>
+      <div class="fig"><b id="n-phd">0</b><span>seguiram para o doutorado</span></div>
+      <div class="fig"><b id="n-cities">0</b><span>cidades e países</span></div>
+    </div>
+    <div class="cta-row">
+      <a class="btn" href="#cadastro">Fazer meu cadastro (3 min)</a>
+      <a class="btn ghost" href="#egressos">Ver egressos no mapa</a>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Seções">
+    <a href="#egressos">Egressos</a>
+    <a href="#oportunidades">Oportunidades</a>
+    <a href="#painel">Painel</a>
+    <a href="#forum">Fórum e chat</a>
+    <a href="#cadastro">Meu cadastro</a>
+    <a href="#sobre">Sobre</a>
+  </nav>
+
+  <section id="egressos">
+    <h2>Egressos</h2>
+    <p class="lead">Busque por nome, cidade, empresa, orientador, título ou linha de pesquisa. Toque numa cidade do mapa para filtrar.</p>
+    <div class="filters">
+      <input type="search" id="q" placeholder="Buscar: nome, cidade, empresa, orientador, título…" aria-label="Buscar egressos">
+      <div class="row">
+        <select id="f-setor" aria-label="Setor de atuação"><option value="">Todos os setores</option></select>
+        <select id="f-phd" aria-label="Doutorado">
+          <option value="">Doutorado: todos</option>
+          <option value="sim">Seguiu para o doutorado</option>
+          <option value="nao">Só mestrado</option>
+        </select>
+        <select id="f-linha" aria-label="Linha de pesquisa"><option value="">Todas as linhas</option></select>
+        <label class="check"><input type="checkbox" id="f-mentor"> Só quem aceita mentoria</label>
+      </div>
+    </div>
+
+    <div class="board">
+      <div class="mapcol">
+        <div class="mapbox">
+          <h3>Onde os egressos moram hoje</h3>
+          <small>Mapa esquemático do Estado do Rio de Janeiro. Toque numa cidade para filtrar.</small>
+          <svg class="map" id="map" viewBox="0 0 400 300" role="group" aria-label="Mapa esquemático do Rio de Janeiro com as cidades dos egressos"></svg>
+          <div class="chips-title">Cidades, estados e países</div>
+          <div class="chips" id="chips-out"></div>
+        </div>
+      </div>
+      <div>
+        <div class="listhead">
+          <span id="count">0 egressos</span>
+          <button type="button" id="clear" hidden>Limpar filtros</button>
+        </div>
+        <div class="cards" id="cards"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="oportunidades">
+    <h2>Oportunidades</h2>
+    <p class="lead">Vagas, bolsas, estágios e eventos que egressos e parceiros indicam para quem está se formando.</p>
+    <div class="cards cards-wide" id="ops"></div>
+    <p class="note" id="ops-cta"></p>
+  </section>
+
+  <section id="painel">
+    <h2>Painel</h2>
+    <p class="lead">Um retrato do que os egressos informaram. Os números acompanham os filtros da seção Egressos.</p>
+    <div class="panel-grid">
+      <div><h3>Onde atuam</h3><div class="bars" id="bars-setor"></div></div>
+      <div><h3>Linha de pesquisa no mestrado</h3><div class="bars" id="bars-linha"></div></div>
+      <div><h3>Egressos por ano de defesa</h3><div class="bars" id="bars-ano"></div></div>
+    </div>
+  </section>
+
+  <section id="forum">
+    <h2>Fórum e chat</h2>
+    <p class="lead">Dois jeitos de conversar: o fórum guarda as perguntas e respostas para quem chegar depois, e o grupo é para o dia a dia.</p>
+    <div class="two">
+      <div class="box">
+        <h3>Fórum</h3>
+        <p>Dúvidas sobre o mestrado, carreira, bolsas e doutorado. Para participar, entre com sua conta do GitHub.</p>
+        <div id="giscus-slot"></div>
+      </div>
+      <div class="box">
+        <h3>Grupo de conversa</h3>
+        <p id="chat-text">O grupo ainda não foi configurado.</p>
+        <a class="btn" id="chat-btn" href="#" hidden>Entrar no grupo</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="cadastro">
+    <h2>Meu cadastro</h2>
+    <p class="lead">Leva cerca de 3 minutos. Você escolhe o que aparece na página: só entram na rede os cadastros com autorização marcada e revisados pela coordenação.</p>
+    <div class="two">
+      <div class="box">
+        <h3>O que perguntamos</h3>
+        <ul class="plain">
+          <li>Nome, ano da defesa, título da dissertação, linha de pesquisa e orientador</li>
+          <li>Cidade onde mora e onde trabalha hoje (setor, empresa ou instituição, cargo)</li>
+          <li>Se seguiu para o doutorado</li>
+          <li>Se aceita conversar com quem está entrando (mentoria)</li>
+          <li>LinkedIn e Lattes, se quiser</li>
+        </ul>
+        <p class="note">O e-mail que você informar fica só com a coordenação e não aparece no site.</p>
+      </div>
+      <div class="box">
+        <h3>Preencher agora</h3>
+        <p id="form-text">O formulário ainda não foi configurado.</p>
+        <a class="btn" id="form-btn" href="#" target="_blank" rel="noopener" hidden>Abrir formulário</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="sobre">
+    <h2>Sobre</h2>
+    <p class="lead">Iniciativa do <span id="sobre-programa">PPG-CTM</span> para manter a rede de egressos em contato, mostrar os caminhos que o mestrado abre e aproximar quem saiu de quem está entrando. Inspirada na Rede de Egressos da Modelagem Computacional.</p>
+    <p class="note" id="contatos"></p>
+  </section>
+
+  <footer>
+    Dados informados pelos próprios egressos e revisados pela coordenação. Você pode pedir a correção ou a retirada do seu cadastro a qualquer momento (LGPD). O mapa é esquemático.
+  </footer>
+</div>
+
+<script src="js/config.js"></script>
+<script src="data/exemplo.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

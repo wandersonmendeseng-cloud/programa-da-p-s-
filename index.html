@@ -971,7 +971,12 @@
       if (!outros.length) { map.setView([-22.35, -42.65], 7); return; }
       // Enquadra a região da sede; cidades muito distantes (ex.: exterior) não encolhem o mapa
       const perto = outros.filter(p => Math.abs(p[0] - sede[0]) <= 9 && Math.abs(p[1] - sede[1]) <= 9);
-      map.fitBounds(perto.length ? [sede].concat(perto) : outros, { padding: [32, 32], maxZoom: 10 });
+      const alvo = perto.length ? [sede].concat(perto) : outros;
+      const lats = alvo.map(p => p[0]), lons = alvo.map(p => p[1]);
+      const parado = Math.max.apply(null, lats) - Math.min.apply(null, lats) < 0.001 &&
+                     Math.max.apply(null, lons) - Math.min.apply(null, lons) < 0.001;
+      if (parado) { map.setView(alvo[0], 10, { animate: false }); return; }
+      map.fitBounds(alvo, { padding: [32, 32], maxZoom: 10, animate: false });
     }
 
     // Dados institucionais anônimos APENAS se o botão "Simular Rede" for clicado durante a apresentação
@@ -1016,10 +1021,11 @@
     function initMap() {
       map = L.map("map", { scrollWheelZoom: false }).setView([-22.35, -42.65], 7);
       const attrib = "&copy; <a href='https://www.openstreetmap.org/copyright' target='_blank' rel='noopener'>OpenStreetMap</a>";
-      const primary = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-        attribution: attrib + " &copy; CARTO", subdomains: "abcd", maxZoom: 19
+      // Mapa de fundo do OpenStreetMap (não exige chave de acesso)
+      const primary = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: attrib, maxZoom: 19
       }).addTo(map);
-      // Se o mapa de fundo principal não carregar, troca para o padrão do OpenStreetMap
+      // Se ele não carregar, troca para o mapa de ruas da Esri
       let tilesOk = 0, tilesErr = 0, trocou = false;
       primary.on("tileload", () => { tilesOk++; });
       primary.on("tileerror", () => {
@@ -1027,7 +1033,9 @@
         if (!trocou && tilesOk === 0 && tilesErr >= 3) {
           trocou = true;
           map.removeLayer(primary);
-          L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: attrib, maxZoom: 19 }).addTo(map);
+          L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
+            attribution: "Tiles &copy; Esri", maxZoom: 19
+          }).addTo(map);
         }
       });
       markersLayer = L.layerGroup().addTo(map);
@@ -1035,8 +1043,14 @@
       // Corrige o tamanho do mapa quando a página é redimensionada ou termina de carregar
       const el = map.getContainer();
       ["pointerdown", "wheel", "touchstart"].forEach(ev => el.addEventListener(ev, () => { userInteracted = true; }, { passive: true }));
-      if (window.ResizeObserver) new ResizeObserver(() => map.invalidateSize()).observe(el);
-      window.addEventListener("load", () => map.invalidateSize());
+      // Quando o tamanho da área muda ou a página termina de carregar, reajusta e reenquadra
+      let roTimer = null;
+      const reajustar = () => {
+        clearTimeout(roTimer);
+        roTimer = setTimeout(() => { map.invalidateSize(); if (!userInteracted) renderMap(true); }, 150);
+      };
+      if (window.ResizeObserver) new ResizeObserver(reajustar).observe(el);
+      window.addEventListener("load", reajustar);
     }
 
     // Leitor de CSV do Google Sheets

@@ -1,3 +1,6 @@
+
+
+HTML
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -925,6 +928,2551 @@
       updateStats();
       renderOpportunities();
       renderAll();
+    });
+  </script>
+</body>
+</html>
+Por que essa estrutura é melhor?
+Zero erro de carregamento: Como o CSS e o JavaScript estão embutidos dentro do próprio index.html, se a página abrir, o visual e o sistema carregam juntos instantaneamente.
+
+Mapa Geográfico Real: Os egressos de Nova Friburgo, Macaé, Rio de Janeiro, etc., agora aparecem sobre o mapa real do estado, permitindo dar zoom e clicar nas bolhas de cada município.
+
+Manutenção Simples: Quando você criar o Google Forms e publicar a planilha de respostas, basta colocar o link ali no bloco CONFIG (linha 390 do código) que o site passa a puxar os dados reais automaticamente.
+
+Assim que subir esse index.html único no GitHub, me avisa se o mapa e o visual novo já abriram direitinho por aí!
+
+O navegador do seu celular ainda está mostrando o arquivo antigo que ficou salvo na memória (cache). Dá para saber disso com certeza porque os textos que aparecem nessa tela ("Quem passou pelo mestrado..." e "Mapa esquemático do Estado do Rio de Janeiro") são do código antigo — no código novo que te passei, esses textos nem existem mais!   
+113958.jpg
++ 3
+
+Para forçar o celular a baixar a versão nova agora mesmo, faça este truque simples:
+
+Use um parâmetro no final do link (Fura-Cache):
+Toque na barra de endereços do navegador, vá até o final do link e adicione ?v=2 no final. Vai ficar assim:
+[https://wandersonmendeseng-cloud.github.io/programa-da-p-s-/?v=2](https://wandersonmendeseng-cloud.github.io/programa-da-p-s-/?v=2)
+(Isso engana o navegador, fazendo ele achar que é uma página inédita e obrigando-o a baixar o código novo da internet).   
+113969.jpg
+
+Confirme se o arquivo foi substituído no GitHub:
+Caso mesmo com o ?v=2 ainda apareça esse texto antigo, volte na aba do GitHub e verifique dois detalhes rápidos:   
+113969.jpg
++ 2
+
+Se quando você subiu o arquivo novo, ele substituiu mesmo o index.html antigo (ou se acabou ficando salvo com outro nome, tipo index-1.html). No GitHub precisa se chamar exatamente index.html.   
+113957.jpg
++ 2
+
+Se na lateral direita do GitHub, em Deployments, a bolinha ao lado de github-pages já ficou verde (às vezes ela fica amarela por 1 ou 2 minutos enquanto o GitHub atualiza o site).   
+113957.jpg
++ 1
+
+Testa colocar o ?v=2 no final do endereço e me diz se a tela nova carregou!
+
+Foi, agora deixe cheio de animações. Siga as paletas do programa e deixe no modelo pronto para eu apresentar, sem os exemplos
+
+A versão abaixo foi reconstruída para uma apresentação executiva e acadêmica de alto nível, utilizando estritamente os tokens de cores originais do programa (magenta #a8206f, violeta #5b3fa6 e fundos neutros arroxeados #f6f3f9 / #130e20 no modo escuro) e as fontes oficiais (Bricolage Grotesque, IBM Plex Sans e IBM Plex Mono).   
+index-1.html
++ 1
+
+Todos os nomes fictícios e avisos de teste foram removidos. Para que o site não fique vazio ou com cara de "quebrado" durante a sua apresentação enquanto a planilha oficial não está conectada, adicionei um Modo Apresentação Interativo discreto no canto superior direito: com a chave desligada, o site fica 100% limpo aguardando os primeiros cadastros oficiais; se quiser demonstrar os gráficos, filtros e pinos do mapa funcionando ao vivo para a banca ou coordenação, basta clicar na chave para simular a visualização da rede.
+
+Substitua o conteúdo do seu index.html por este código:
+
+HTML
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>Rede de Egressos · PPG-CTM | IPRJ-UERJ</title>
+  <meta name="description" content="Plataforma oficial da Rede de Egressos do Programa de Pós-Graduação em Ciência e Tecnologia de Materiais do IPRJ-UERJ.">
+
+  <!-- Fontes Oficiais do Projeto -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+  <!-- Mapa Interativo (Leaflet) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+
+  <style>
+    /* Paleta Oficial do PPG-CTM (Magenta, Violeta e Neutros Arroxeados) */
+    :root {
+      --bg: #f6f3f9;
+      --surface: #ffffff;
+      --surface-glass: rgba(255, 255, 255, 0.82);
+      --fg: #1e1631;
+      --muted: #655c7b;
+      --line: #ded7ea;
+      --accent: #a8206f;
+      --accent-ink: #ffffff;
+      --accent-soft: #f6dfee;
+      --violet: #5b3fa6;
+      --violet-soft: #e6e0f6;
+      --land: #ebe6f4;
+      --land-line: #c9bfdd;
+      --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+      --font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      --font-mono: "IBM Plex Mono", monospace;
+      --shadow-sm: 0 4px 16px rgba(30, 22, 49, 0.05);
+      --shadow-lg: 0 16px 40px rgba(91, 63, 166, 0.12);
+      --radius: 14px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #130e20;
+        --surface: #1c1630;
+        --surface-glass: rgba(28, 22, 48, 0.82);
+        --fg: #f0ebf8;
+        --muted: #a79fbd;
+        --line: #33284b;
+        --accent: #ea5fae;
+        --accent-ink: #1a0b14;
+        --accent-soft: #3b1c33;
+        --violet: #a58cf0;
+        --violet-soft: #2b2250;
+        --land: #221a38;
+        --land-line: #3d3160;
+        --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Fundo Animado com Orbes da Paleta */
+    .bg-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.22;
+      animation: floatOrb 18s infinite alternate ease-in-out;
+    }
+    .orb-1 {
+      width: 420px; height: 420px;
+      background: var(--accent);
+      top: -120px; right: -80px;
+    }
+    .orb-2 {
+      width: 380px; height: 380px;
+      background: var(--violet);
+      bottom: 10%; left: -120px;
+      animation-delay: -7s;
+    }
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-40px, 50px) scale(1.12); }
+      100% { transform: translate(30px, -30px) scale(0.95); }
+    }
+
+    /* Navegação Glassmorphism */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--surface-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+      transition: all 0.3s ease;
+    }
+    .nav-wrap {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      overflow-x: auto;
+    }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.15rem;
+      color: var(--fg);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+    .brand-badge {
+      background: linear-gradient(135deg, var(--accent), var(--violet));
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      padding: 4px 9px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+    }
+    .nav-links {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      padding: 7px 12px;
+      border-radius: 8px;
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    .nav-links a:hover {
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    /* Botão de Simulação para Apresentação */
+    .pres-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--violet);
+      background: var(--violet-soft);
+      border: 1px solid var(--line);
+      padding: 6px 12px;
+      border-radius: 99px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    .pres-toggle:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+    .pres-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: all 0.3s ease;
+    }
+    .pres-toggle.active {
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: var(--accent);
+    }
+    .pres-toggle.active .pres-dot {
+      background: #fff;
+      box-shadow: 0 0 8px #fff;
+    }
+
+    .wrap {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 20px 64px;
+    }
+
+    /* Animações de Entrada (Scroll Reveal) */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .delay-1 { transition-delay: 0.1s; }
+    .delay-2 { transition-delay: 0.2s; }
+    .delay-3 { transition-delay: 0.3s; }
+
+    /* Hero Section */
+    header.hero {
+      padding: 56px 0 44px;
+      border-bottom: 1px solid var(--line);
+    }
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--violet);
+      background: var(--violet-soft);
+      padding: 6px 14px;
+      border-radius: 99px;
+      margin-bottom: 18px;
+    }
+    .pulse-dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(168, 32, 111, 0.6); }
+      70% { box-shadow: 0 0 0 8px rgba(168, 32, 111, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(168, 32, 111, 0); }
+    }
+
+    header.hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.3rem, 5.5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.06;
+      letter-spacing: -0.025em;
+      margin-bottom: 18px;
+    }
+    header.hero h1 em {
+      font-style: normal;
+      background: linear-gradient(120deg, var(--accent), var(--violet));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header.hero p {
+      font-size: 1.08rem;
+      color: var(--muted);
+      max-width: 65ch;
+      margin-bottom: 28px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 42px;
+    }
+    .btn {
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 12px 22px;
+      border-radius: 10px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      border: 1.5px solid var(--accent);
+      background: var(--accent);
+      color: var(--accent-ink);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px -6px rgba(168, 32, 111, 0.5);
+    }
+    .btn.ghost {
+      background: transparent;
+      color: var(--accent);
+    }
+    .btn.ghost:hover {
+      background: var(--accent-soft);
+      box-shadow: none;
+    }
+
+    /* Indicadores Animados */
+    .figures {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+    }
+    .fig {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .fig::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--violet));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.35s ease;
+    }
+    .fig:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent);
+      box-shadow: var(--shadow-lg);
+    }
+    .fig:hover::after { transform: scaleX(1); }
+    .fig b {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+    .fig span {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* Seções */
+    section {
+      padding-top: 56px;
+      scroll-margin-top: 70px;
+    }
+    .sec-head { margin-bottom: 24px; }
+    .sec-head h2 {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .sec-head p {
+      color: var(--muted);
+      max-width: 66ch;
+    }
+
+    /* Barra de Filtros */
+    .filters {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+      display: grid;
+      gap: 12px;
+    }
+    .filters .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    input[type="search"], select {
+      font: 400 0.95rem var(--font-body);
+      color: var(--fg);
+      background: var(--bg);
+      border: 1.5px solid var(--line);
+      border-radius: 8px;
+      padding: 11px 14px;
+      width: 100%;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="search"]:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .filters select {
+      width: auto;
+      flex: 1 1 170px;
+    }
+    .check {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .check input {
+      width: 18px; height: 18px;
+      accent-color: var(--accent);
+    }
+
+    /* Board: Mapa + Diretório */
+    .board {
+      display: grid;
+      gap: 24px;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+    }
+    @media (min-width: 900px) {
+      .board { grid-template-columns: 5fr 6fr; }
+      .mapcol { position: sticky; top: 82px; }
+    }
+
+    .mapbox, .box {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.3s ease;
+    }
+    .mapbox:hover, .box:hover { box-shadow: var(--shadow-lg); }
+    .mapbox h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .mapbox small {
+      color: var(--muted);
+      display: block;
+      margin-bottom: 12px;
+    }
+    #map {
+      width: 100%;
+      height: 350px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--land);
+      z-index: 1;
+    }
+    .chips-title {
+      font: 600 0.74rem var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-top: 14px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .chip {
+      font: 500 0.8rem var(--font-mono);
+      border: 1.5px solid var(--line);
+      background: var(--bg);
+      color: var(--fg);
+      border-radius: 999px;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .chip:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .chip.on {
+      background: var(--violet);
+      border-color: var(--violet);
+      color: #fff;
+    }
+
+    /* Lista e Cards de Egressos */
+    .listhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .listhead span {
+      font: 500 0.85rem var(--font-mono);
+      color: var(--muted);
+    }
+    .listhead button {
+      font: 600 0.85rem var(--font-body);
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .cards {
+      display: grid;
+      gap: 12px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px;
+      display: grid;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      animation: cardFadeIn 0.45s ease backwards;
+    }
+    @keyframes cardFadeIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: var(--shadow-lg);
+    }
+    .card .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .card h3 { font-size: 1.15rem; font-family: var(--font-display); }
+    .card .yr {
+      font: 500 0.78rem var(--font-mono);
+      color: var(--violet);
+      background: var(--violet-soft);
+      padding: 3px 9px;
+      border-radius: 99px;
+    }
+    .card .role { font-weight: 600; color: var(--accent); font-size: 0.94rem; }
+    .card .where { color: var(--muted); font-size: 0.88rem; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      font: 500 0.74rem var(--font-mono);
+      padding: 4px 9px;
+      border-radius: 6px;
+      background: var(--violet-soft);
+      color: var(--violet);
+    }
+    .tag.m {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .card .thesis {
+      font-size: 0.88rem;
+      color: var(--muted);
+      border-top: 1px dashed var(--line);
+      padding-top: 10px;
+      margin-top: 4px;
+    }
+    .card .thesis i { color: var(--fg); font-style: normal; font-weight: 600; }
+    .card .links { display: flex; gap: 16px; font-size: 0.88rem; font-weight: 600; margin-top: 4px; }
+    .card .links a { color: var(--accent); text-decoration: none; }
+    .card .links a:hover { text-decoration: underline; }
+
+    /* Estado Limpo (Pronto para Apresentação) */
+    .empty-state {
+      padding: 38px 24px;
+      border: 1.5px dashed var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      text-align: center;
+      color: var(--muted);
+    }
+    .empty-state h4 {
+      font-family: var(--font-display);
+      color: var(--fg);
+      font-size: 1.15rem;
+      margin-bottom: 6px;
+    }
+    .empty-state p {
+      font-size: 0.92rem;
+      max-width: 48ch;
+      margin: 0 auto 16px;
+    }
+
+    /* Painel de Gráficos com Barras Animadas */
+    .panel-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+    .bars { display: grid; gap: 12px; margin-top: 14px; }
+    .bar {
+      display: grid;
+      grid-template-columns: minmax(0, 145px) 1fr 34px;
+      gap: 10px;
+      align-items: center;
+      font-size: 0.88rem;
+    }
+    .bar .track {
+      height: 11px;
+      background: var(--land);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .bar .fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--violet));
+      border-radius: 99px;
+      width: 0;
+      transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .bar b {
+      font: 600 0.84rem var(--font-mono);
+      text-align: right;
+    }
+
+    /* Grid de 2 Colunas */
+    .two {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+    .box { display: grid; gap: 12px; align-content: start; }
+    .box h3 { font-size: 1.2rem; font-family: var(--font-display); }
+    .box p { color: var(--muted); }
+    ul.plain { padding-left: 18px; display: grid; gap: 8px; color: var(--muted); }
+
+    footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.86rem;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Orbes Flutuantes de Fundo -->
+  <div class="bg-glow">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+
+  <!-- Barra de Navegação -->
+  <nav class="navbar">
+    <div class="nav-wrap">
+      <a href="#" class="brand">
+        <span class="brand-badge">PPG-CTM</span>
+        IPRJ · UERJ
+      </a>
+      <div class="nav-links">
+        <a href="#egressos">Egressos</a>
+        <a href="#painel">Painel</a>
+        <a href="#oportunidades">Oportunidades</a>
+        <a href="#forum">Fórum & Chat</a>
+        <a href="#cadastro">Meu Cadastro</a>
+        <a href="#sobre">Sobre</a>
+        <button type="button" class="pres-toggle" id="btn-simular" title="Alternar visualização de demonstração para apresentação">
+          <span class="pres-dot"></span>
+          <span id="sim-label">Simular Rede</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <!-- Cabeçalho Principal -->
+    <header class="hero reveal">
+      <div class="tag-pill">
+        <span class="pulse-dot"></span>
+        Programa de Pós-Graduação em Ciência e Tecnologia de Materiais
+      </div>
+      <h1>Rede de Egressos<br><em>PPG-CTM</em> · IPRJ-UERJ</h1>
+      <p>Quem passou pelo mestrado em Ciência e Tecnologia de Materiais: onde mora, onde trabalha, se seguiu para o doutorado e como pode apoiar quem está chegando agora ao programa.</p>
+
+      <div class="cta-row">
+        <a class="btn" href="#cadastro">Fazer meu cadastro (3 min)</a>
+        <a class="btn ghost" href="#egressos">Explorar mapa da rede</a>
+      </div>
+
+      <div class="figures" aria-live="polite">
+        <div class="fig reveal delay-1">
+          <b id="n-total">0</b>
+          <span>egressos na rede</span>
+        </div>
+        <div class="fig reveal delay-2">
+          <b id="n-area">0</b>
+          <span>atuam com materiais ou modelagem</span>
+        </div>
+        <div class="fig reveal delay-3">
+          <b id="n-phd">0</b>
+          <span>seguiram para o doutorado</span>
+        </div>
+        <div class="fig reveal delay-3">
+          <b id="n-cities">0</b>
+          <span>cidades e países mapeados</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Seção Egressos & Mapa -->
+    <section id="egressos" class="reveal">
+      <div class="sec-head">
+        <h2>Diretório de Egressos</h2>
+        <p>Busque por nome, cidade, instituição, orientador, título ou linha de pesquisa. Clique em uma cidade no mapa para filtrar.</p>
+      </div>
+
+      <div class="filters">
+        <input type="search" id="q" placeholder="Buscar: nome, cidade, empresa, orientador, título…" aria-label="Buscar egressos">
+        <div class="row">
+          <select id="f-setor" aria-label="Setor de atuação"><option value="">Todos os setores</option></select>
+          <select id="f-phd" aria-label="Doutorado">
+            <option value="">Doutorado: todos</option>
+            <option value="sim">Seguiu para o doutorado</option>
+            <option value="nao">Mestrado concluído</option>
+          </select>
+          <select id="f-linha" aria-label="Linha de pesquisa"><option value="">Todas as linhas</option></select>
+          <label class="check"><input type="checkbox" id="f-mentor"> Só quem aceita mentoria</label>
+        </div>
+      </div>
+
+      <div class="board">
+        <div class="mapcol">
+          <div class="mapbox">
+            <h3>Onde os egressos atuam hoje</h3>
+            <small>Mapa interativo da rede. Toque em um marcador ou município abaixo para filtrar.</small>
+            <div id="map"></div>
+            <div class="chips-title">Localidades Mapeadas</div>
+            <div class="chips" id="chips-out"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="listhead">
+            <span id="count">0 egressos</span>
+            <button type="button" id="clear" hidden>Limpar filtros</button>
+          </div>
+          <div class="cards" id="cards"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção Painel -->
+    <section id="painel" class="reveal">
+      <div class="sec-head">
+        <h2>Painel de Indicadores</h2>
+        <p>Síntese quantitativa da atuação profissional e acadêmica dos egressos, atualizada em tempo real conforme os filtros.</p>
+      </div>
+      <div class="panel-grid">
+        <div class="box">
+          <h3>Setor de atuação</h3>
+          <div class="bars" id="bars-setor"></div>
+        </div>
+        <div class="box">
+          <h3>Linha de pesquisa no mestrado</h3>
+          <div class="bars" id="bars-linha"></div>
+        </div>
+        <div class="box">
+          <h3>Egressos por ano de defesa</h3>
+          <div class="bars" id="bars-ano"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção Oportunidades -->
+    <section id="oportunidades" class="reveal">
+      <div class="sec-head">
+        <h2>Oportunidades</h2>
+        <p>Vagas na indústria, bolsas de pós-graduação, estágios e chamadas científicas compartilhadas pela rede.</p>
+      </div>
+      <div class="two" id="ops"></div>
+    </section>
+
+    <!-- Seção Fórum e Chat -->
+    <section id="forum" class="reveal">
+      <div class="sec-head">
+        <h2>Fórum e Comunidade</h2>
+        <p>Canais permanentes para troca de experiências sobre carreira, pesquisa, bolsas e cooperação técnica.</p>
+      </div>
+      <div class="two">
+        <div class="box">
+          <h3>Fórum Acadêmico</h3>
+          <p>Espaço integrado às discussões do repositório para dúvidas sobre ingresso, dissertação, doutorado e mercado de trabalho.</p>
+          <div id="giscus-slot"></div>
+        </div>
+        <div class="box">
+          <h3>Grupo Oficial da Rede</h3>
+          <p id="chat-text">Canal de comunicação direta entre egressos, discentes e coordenação para avisos rápidos e divulgação de vagas.</p>
+          <a class="btn" id="chat-btn" href="#cadastro">Integrar Comunidade</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção Cadastro -->
+    <section id="cadastro" class="reveal">
+      <div class="sec-head">
+        <h2>Meu Cadastro</h2>
+        <p>Leva cerca de 3 minutos. Você escolhe o que aparece na página: só entram na rede os cadastros autorizados e validados pela coordenação.</p>
+      </div>
+      <div class="two">
+        <div class="box">
+          <h3>Informações Mapeadas</h3>
+          <ul class="plain">
+            <li>Nome completo, ano da defesa, título da dissertação, linha de pesquisa e orientador(a)</li>
+            <li>Cidade atual e atuação profissional (setor, empresa ou instituição e cargo)</li>
+            <li>Continuidade acadêmica no doutorado</li>
+            <li>Disponibilidade para mentoria de novos mestrandos</li>
+            <li>Links profissionais para Currículo Lattes e LinkedIn</li>
+          </ul>
+          <p style="font-size:0.85rem;">O endereço de e-mail informado permanece restrito à coordenação do programa e nunca é exibido publicamente (LGPD).</p>
+        </div>
+        <div class="box">
+          <h3>Vincular Perfil à Rede</h3>
+          <p id="form-text">Preencha o formulário institucional da coordenação para incluir ou atualizar sua trajetória profissional na plataforma.</p>
+          <div>
+            <a class="btn" id="form-btn" href="#" target="_blank" rel="noopener">Abrir Formulário de Cadastro</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção Sobre -->
+    <section id="sobre" class="reveal">
+      <div class="sec-head">
+        <h2>Sobre a Iniciativa</h2>
+        <p>Iniciativa do <strong>Programa de Pós-Graduação em Ciência e Tecnologia de Materiais (PPG-CTM · IPRJ/UERJ)</strong> para fortalecer o vínculo com seus egressos, dar visibilidade ao impacto do mestrado e aproximar quem já atua no mercado ou na academia de quem está ingressando.</p>
+      </div>
+      <div class="cta-row" style="margin-bottom:0;">
+        <a class="btn ghost" href="https://www.instagram.com/ppgctm.iprj/" target="_blank" rel="noopener">Instagram @ppgctm.iprj</a>
+      </div>
+    </section>
+
+    <footer>
+      <span><strong>PPG-CTM · Instituto Politécnico da UERJ (IPRJ)</strong> — Nova Friburgo, RJ.</span>
+      <span>Conformidade LGPD: Dados informados pelos egressos e revisados pela coordenação.</span>
+    </footer>
+  </div>
+
+  <!-- Script Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+  <script>
+    /*************************************************************************
+     * CONFIGURAÇÃO OFICIAL DA REDE
+     * Cole abaixo os links oficiais do Google Sheets (CSV) e Google Forms.
+     *************************************************************************/
+    const REDE_CONFIG = {
+      EGRESSOS_CSV_URL: "",
+      OPORTUNIDADES_CSV_URL: "",
+      FORM_URL: "",
+      CHAT_URL: ""
+    };
+
+    // Coordenadas Geográficas do Estado do RJ e Polos Nacionais
+    const COORD = {
+      "nova friburgo": [-22.2819, -42.5311],
+      "rio de janeiro": [-22.9068, -43.1729],
+      "niteroi": [-22.8832, -43.1034],
+      "petropolis": [-22.5046, -43.1823],
+      "macae": [-22.3708, -41.7869],
+      "campos dos goytacazes": [-21.7545, -41.3244],
+      "volta redonda": [-22.5232, -44.1042],
+      "cabo frio": [-22.8794, -42.0186],
+      "resende": [-22.4689, -44.4467],
+      "teresopolis": [-22.4123, -42.9664],
+      "cachoeiras de macacu": [-22.4636, -42.6531],
+      "sao paulo": [-23.5505, -46.6333],
+      "campinas": [-22.9099, -47.0626],
+      "belo horizonte": [-19.9167, -43.9345]
+    };
+
+    // Dados institucionais anônimos APENAS se o botão "Simular Rede" for clicado durante a apresentação
+    const DADOS_SIMULACAO = [
+      { nome: "Pesquisador(a) Egresso(a) #01", ano: 2024, cidade: "Nova Friburgo", uf: "RJ", setor: "Universidade", org: "IPRJ / UERJ", cargo: "Doutorando(a)", phd: "UERJ", titulo: "Modelagem Computacional e Simulação Termomecânica de Materiais", linha: "Modelagem computacional", orientador: "Docente PPG-CTM", mentor: true, linkedin: "", lattes: "http://lattes.cnpq.br" },
+      { nome: "Pesquisador(a) Egresso(a) #02", ano: 2023, cidade: "Macaé", uf: "RJ", setor: "Indústria", org: "Setor de Energia & Óleo e Gás", cargo: "Engenheiro(a) de Materiais", phd: "", titulo: "Avaliação da Resistência à Corrosão e Tribocorrosão em Ligas Inoxidáveis", linha: "Caracterização de materiais", orientador: "Docente PPG-CTM", mentor: true, linkedin: "https://linkedin.com", lattes: "" },
+      { nome: "Pesquisador(a) Egresso(a) #03", ano: 2022, cidade: "Rio de Janeiro", uf: "RJ", setor: "Pesquisa e institutos", org: "Centro de Pesquisa e Desenvolvimento", cargo: "Analista de P&D", phd: "UERJ", titulo: "Simulação Numérica de Escoamento e Transferência de Calor em Processos Metalúrgicos", linha: "Simulação numérica", orientador: "Docente PPG-CTM", mentor: true, linkedin: "https://linkedin.com", lattes: "http://lattes.cnpq.br" },
+      { nome: "Pesquisador(a) Egresso(a) #04", ano: 2021, cidade: "Volta Redonda", uf: "RJ", setor: "Indústria", org: "Setor Siderúrgico", cargo: "Especialista de Processos", phd: "", titulo: "Processamento Termomecânico e Análise Microestrutural de Aços Avançados", linha: "Materiais e processos", orientador: "Docente PPG-CTM", mentor: false, linkedin: "https://linkedin.com", lattes: "" },
+      { nome: "Pesquisador(a) Egresso(a) #05", ano: 2023, cidade: "Niterói", uf: "RJ", setor: "Universidade", org: "Instituição Federal de Ensino", cargo: "Pesquisador(a) Colaborador(a)", phd: "outra", titulo: "Desenvolvimento de Compósitos Poliméricos e Caracterização Mecânica", linha: "Materiais e processos", orientador: "Docente PPG-CTM", mentor: true, linkedin: "", lattes: "http://lattes.cnpq.br" }
+    ];
+
+    const OPS_SIMULACAO = [
+      { titulo: "Chamada para Cadastramento de Oportunidades", org: "Coordenação PPG-CTM · IPRJ/UERJ", tipo: "Institucional", local: "Nova Friburgo, RJ", data: "2026", descricao: "Espaço destinado à divulgação de bolsas de doutorado, pós-doutorado e vagas na indústria indicadas por egressos e parceiros do programa.", link: "#cadastro" }
+    ];
+
+    let DATA_OFICIAL = [];
+    let DATA = [];
+    let OPS = [];
+    let modoSimulacao = false;
+    let map, markersLayer;
+    let state = { q: "", setor: "", phd: "", linha: "", mentor: false, place: "" };
+
+    const $ = id => document.getElementById(id);
+    const norm = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const esc = t => { const d = document.createElement("div"); d.textContent = t || ""; return d.innerHTML; };
+
+    // Animação de Contagem Progressiva nos Indicadores
+    function animateCounter(el, target) {
+      const start = parseInt(el.textContent, 10) || 0;
+      const duration = 650;
+      const startTime = performance.now();
+      function step(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(start + (target - start) * eased);
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    // Inicializa Mapa Leaflet
+    function initMap() {
+      map = L.map("map", { scrollWheelZoom: false }).setView([-22.35, -42.65], 7);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(map);
+      markersLayer = L.layerGroup().addTo(map);
+    }
+
+    // Leitor de CSV do Google Sheets
+    function parseCSV(text) {
+      const rows = []; let row = [], f = "", q = false;
+      text = String(text).replace(/^\uFEFF/, "");
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (q) {
+          if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; }
+          else f += c;
+        } else if (c === '"') q = true;
+        else if (c === ",") { row.push(f); f = ""; }
+        else if (c === "\n" || c === "\r") {
+          if (c === "\r" && text[i + 1] === "\n") i++;
+          row.push(f); f = ""; rows.push(row); row = [];
+        } else f += c;
+      }
+      if (f !== "" || row.length) { row.push(f); rows.push(row); }
+      if (!rows.length) return [];
+      const head = rows[0].map(norm);
+      return rows.slice(1).filter(r => r.some(x => x.trim() !== "")).map(r => {
+        const o = {}; head.forEach((h, idx) => o[h] = (r[idx] || "").trim()); return o;
+      });
+    }
+
+    function matches(r, skipPlace = false) {
+      if (state.q) {
+        const hay = norm([r.nome, r.cidade, r.uf, r.org, r.cargo, r.titulo, r.linha, r.setor, r.orientador].join(" "));
+        if (!hay.includes(norm(state.q))) return false;
+      }
+      if (state.setor && r.setor !== state.setor) return false;
+      if (state.phd === "sim" && !r.phd) return false;
+      if (state.phd === "nao" && r.phd) return false;
+      if (state.linha && r.linha !== state.linha) return false;
+      if (state.mentor && !r.mentor) return false;
+      if (!skipPlace && state.place && norm(r.cidade) !== state.place) return false;
+      return true;
+    }
+
+    function renderFigures() {
+      const places = new Set(DATA.map(r => norm(r.cidade)).filter(Boolean));
+      animateCounter($("n-total"), DATA.length);
+      animateCounter($("n-area"), DATA.filter(r => norm(r.setor) !== "outra area").length);
+      animateCounter($("n-phd"), DATA.filter(r => r.phd).length);
+      animateCounter($("n-cities"), places.size);
+    }
+
+    function renderMap() {
+      markersLayer.clearLayers();
+      const groups = {};
+      DATA.filter(r => matches(r, true)).forEach(r => {
+        const k = norm(r.cidade);
+        if (!k) return;
+        if (!groups[k]) groups[k] = { label: `${r.cidade}${r.uf ? ", " + r.uf : ""}`, n: 0, xy: COORD[k] };
+        groups[k].n++;
+      });
+
+      // Marcador Institucional do Campus IPRJ-UERJ sempre visível
+      const iprjMarker = L.circleMarker([-22.2819, -42.5311], {
+        radius: 6,
+        fillColor: "#5b3fa6",
+        color: "#ffffff",
+        weight: 2,
+        fillOpacity: 0.7
+      }).bindTooltip("<b>Sede PPG-CTM · IPRJ/UERJ</b><br>Nova Friburgo, RJ");
+      markersLayer.addLayer(iprjMarker);
+
+      Object.keys(groups).forEach(k => {
+        const g = groups[k];
+        if (!g.xy) return;
+        const active = state.place === k;
+        const circle = L.circleMarker(g.xy, {
+          radius: 9 + Math.sqrt(g.n) * 4,
+          fillColor: active ? "#5b3fa6" : "#a8206f",
+          color: "#ffffff",
+          weight: 2.5,
+          fillOpacity: 0.9
+        });
+        circle.bindTooltip(`<b>${g.label}</b>: ${g.n} egresso(s)`);
+        circle.on("click", () => { state.place = active ? "" : k; renderAll(); });
+        markersLayer.addLayer(circle);
+      });
+
+      const out = $("chips-out");
+      out.innerHTML = "";
+      const keys = Object.keys(groups).sort((a, b) => groups[b].n - groups[a].n);
+      if (!keys.length) {
+        out.innerHTML = `<span class="chip" style="cursor:default; opacity:0.75;">Sede: Nova Friburgo, RJ (IPRJ/UERJ)</span>`;
+        return;
+      }
+      keys.forEach(k => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip" + (state.place === k ? " on" : "");
+        b.textContent = `${groups[k].label} · ${groups[k].n}`;
+        b.onclick = () => { state.place = state.place === k ? "" : k; renderAll(); };
+        out.appendChild(b);
+      });
+    }
+
+    function renderCards() {
+      const list = DATA.filter(r => matches(r)).sort((a, b) => b.ano - a.ano);
+      $("count").textContent = `${list.length} ${list.length === 1 ? "egresso listado" : "egressos listados"}`;
+      $("clear").hidden = !(state.q || state.setor || state.phd || state.linha || state.mentor || state.place);
+
+      const box = $("cards");
+      if (!DATA.length) {
+        box.innerHTML = `
+          <div class="empty-state">
+            <h4>Base de Dados Pronta para Integração</h4>
+            <p>A plataforma está configurada para sincronizar automaticamente os perfis validados pela coordenação do PPG-CTM via Google Sheets.</p>
+            <button type="button" class="btn ghost" onclick="toggleSimulacao()">Testar Visualização na Apresentação</button>
+          </div>`;
+        return;
+      }
+      if (!list.length) {
+        box.innerHTML = `<div class="empty-state"><h4>Nenhum resultado encontrado</h4><p>Tente remover alguns filtros ou buscar por outro termo.</p></div>`;
+        return;
+      }
+
+      box.innerHTML = list.map((r, idx) => {
+        const phdLabel = r.phd === "UERJ" ? "Doutorado na UERJ" : r.phd ? "Doutorado externo" : "";
+        const role = [r.cargo, r.org].filter(Boolean).join(" · ");
+        return `
+          <article class="card" style="animation-delay:${idx * 0.06}s">
+            <div class="top">
+              <h3>${esc(r.nome)}</h3>
+              ${r.ano ? `<span class="yr">Defesa ${r.ano}</span>` : ""}
+            </div>
+            ${role ? `<div class="role">${esc(role)}</div>` : ""}
+            <div class="where">📍 ${esc(r.cidade)}${r.uf ? ", " + esc(r.uf) : ""}</div>
+            <div class="tags">
+              ${r.setor ? `<span class="tag">${esc(r.setor)}</span>` : ""}
+              ${r.linha ? `<span class="tag">${esc(r.linha)}</span>` : ""}
+              ${phdLabel ? `<span class="tag">${phdLabel}</span>` : ""}
+              ${r.mentor ? `<span class="tag m">✓ Aceita mentoria</span>` : ""}
+            </div>
+            ${r.titulo ? `<div class="thesis"><i>Dissertação:</i> ${esc(r.titulo)}${r.orientador ? `<br><i>Orientação:</i> ${esc(r.orientador)}` : ""}</div>` : ""}
+            ${(r.linkedin || r.lattes) ? `
+              <div class="links">
+                ${r.linkedin ? `<a href="${esc(r.linkedin)}" target="_blank" rel="noopener">LinkedIn ↗</a>` : ""}
+                ${r.lattes ? `<a href="${esc(r.lattes)}" target="_blank" rel="noopener">Currículo Lattes ↗</a>` : ""}
+              </div>` : ""}
+          </article>`;
+      }).join("");
+    }
+
+    function renderBars(id, pairs) {
+      const el = $(id);
+      if (!pairs.length) {
+        el.innerHTML = `<span style="color:var(--muted); font-size:0.86rem;">Aguardando sincronização de dados.</span>`;
+        return;
+      }
+      const max = Math.max(...pairs.map(p => p[1]), 1);
+      el.innerHTML = pairs.map(p => `
+        <div class="bar">
+          <span>${esc(p[0])}</span>
+          <div class="track"><div class="fill" style="width:${(p[1] / max) * 100}%"></div></div>
+          <b>${p[1]}</b>
+        </div>
+      `).join("");
+    }
+
+    function renderPanel() {
+      const rows = DATA.filter(r => matches(r));
+      const tally = key => {
+        const m = {};
+        rows.forEach(r => { const v = r[key] || "Não informado"; m[v] = (m[v] || 0) + 1; });
+        return Object.entries(m).sort((a, b) => b[1] - a[1]);
+      };
+      renderBars("bars-setor", tally("setor"));
+      renderBars("bars-linha", tally("linha"));
+      const anos = tally("ano").sort((a, b) => String(a[0]).localeCompare(String(b[0])));
+      renderBars("bars-ano", anos);
+    }
+
+    function renderOps() {
+      const box = $("ops");
+      const list = OPS.length ? OPS : OPS_SIMULACAO;
+      box.innerHTML = list.map(o => `
+        <article class="card">
+          <div class="top">
+            <h3>${esc(o.titulo)}</h3>
+            ${o.data ? `<span class="yr">${esc(o.data)}</span>` : ""}
+          </div>
+          <div class="role">${esc(o.org)}</div>
+          <div class="tags">
+            ${o.tipo ? `<span class="tag m">${esc(o.tipo)}</span>` : ""}
+            ${o.local ? `<span class="tag">${esc(o.local)}</span>` : ""}
+          </div>
+          ${o.descricao ? `<div class="thesis">${esc(o.descricao)}</div>` : ""}
+        </article>
+      `).join("");
+    }
+
+    function updateSelectOptions() {
+      const fill = (id, label, key) => {
+        const sel = $(id);
+        sel.innerHTML = `<option value="">${label}</option>`;
+        [...new Set(DATA.map(r => r[key]).filter(Boolean))].sort().forEach(v => {
+          const o = document.createElement("option");
+          o.value = v; o.textContent = v; sel.appendChild(o);
+        });
+      };
+      fill("f-setor", "Todos os setores", "setor");
+      fill("f-linha", "Todas as linhas", "linha");
+    }
+
+    function renderAll() {
+      renderFigures();
+      renderMap();
+      renderCards();
+      renderPanel();
+      renderOps();
+    }
+
+    window.toggleSimulacao = function () {
+      modoSimulacao = !modoSimulacao;
+      DATA = modoSimulacao ? DADOS_SIMULACAO : DATA_OFICIAL;
+      const btn = $("btn-simular");
+      btn.classList.toggle("active", modoSimulacao);
+      $("sim-label").textContent = modoSimulacao ? "Simulação Ativa" : "Simular Rede";
+      state = { q: "", setor: "", phd: "", linha: "", mentor: false, place: "" };
+      updateSelectOptions();
+      renderAll();
+    };
+
+    // Inicialização Geral
+    window.addEventListener("DOMContentLoaded", () => {
+      initMap();
+
+      // Configura animação de Scroll Reveal
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) entry.target.classList.add("visible");
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+
+      // Botão de Simulação para Apresentação
+      $("btn-simular").addEventListener("click", window.toggleSimulacao);
+
+      // Links externos se preenchidos
+      if (REDE_CONFIG.FORM_URL) $("form-btn").href = REDE_CONFIG.FORM_URL;
+      if (REDE_CONFIG.CHAT_URL) $("chat-btn").href = REDE_CONFIG.CHAT_URL;
+      $("giscus-slot").innerHTML = `<div class="empty-state" style="padding:20px;"><p style="margin:0;">Integração com GitHub Discussions (Giscus) pronta para ativação no repositório.</p></div>`;
+
+      // Eventos de Filtro
+      $("q").oninput = e => { state.q = e.target.value.trim(); renderAll(); };
+      $("f-setor").onchange = e => { state.setor = e.target.value; renderAll(); };
+      $("f-phd").onchange = e => { state.phd = e.target.value; renderAll(); };
+      $("f-linha").onchange = e => { state.linha = e.target.value; renderAll(); };
+      $("f-mentor").onchange = e => { state.mentor = e.target.checked; renderAll(); };
+      $("clear").onclick = () => {
+        state = { q: "", setor: "", phd: "", linha: "", mentor: false, place: "" };
+        $("q").value = ""; $("f-setor").value = ""; $("f-phd").value = ""; $("f-linha").value = ""; $("f-mentor").checked = false;
+        renderAll();
+      };
+
+      // Se houver CSV oficial configurado, busca da planilha; caso contrário, inicia limpo
+      if (REDE_CONFIG.EGRESSOS_CSV_URL) {
+        fetch(REDE_CONFIG.EGRESSOS_CSV_URL)
+          .then(r => r.text())
+          .then(txt => {
+            DATA_OFICIAL = parseCSV(txt).filter(o => o.nome).map(o => ({
+              nome: o.nome, ano: parseInt(o.ano, 10) || 0, cidade: o.cidade, uf: o.uf,
+              setor: o.setor || "Outra área", org: o.organizacao || o.empresa || "", cargo: o.cargo || "",
+              phd: norm(o.doutorado).startsWith("sim") ? (norm(o.doutorado).includes("uerj") ? "UERJ" : "outra") : "",
+              titulo: o.titulo || "", linha: o.linha || "", orientador: o.orientador || "",
+              mentor: norm(o.mentoria).startsWith("sim"), linkedin: o.linkedin || "", lattes: o.lattes || ""
+            }));
+            DATA = DATA_OFICIAL;
+            $("btn-simular").style.display = "none";
+            updateSelectOptions();
+            renderAll();
+          })
+          .catch(() => renderAll());
+      } else {
+        renderAll();
+      }
+    });
+  </script>
+</body>
+</html>
+O que foi incluído para a sua apresentação:
+Paleta e Tipografia Oficiais do PPG-CTM: Mantive os tons exatos de magenta (#a8206f), violeta (#5b3fa6) e superfície arroxeada (#f6f3f9 no claro / #130e20 no escuro) e as fontes originais (Bricolage Grotesque nos títulos e IBM Plex no corpo e dados).   
+index-1.html
++ 1
+
+Animações de Entrada e Interatividade:
+
+Orbes luminosos flutuantes no fundo nas cores da identidade visual.
+
+Scroll Reveal: As seções e cartões deslizam suavemente conforme você rola a página.
+
+Contadores dinâmicos: Os números nos cartões do topo sobem animadamente.
+
+Barras de progresso animadas no painel de indicadores.
+
+Chave "Simular Rede" no topo: O site abre 100% institucional, limpo e sem nenhum dado fictício, destacando a sede do IPRJ/UERJ em Nova Friburgo no mapa. Durante a apresentação, se você clicar no botão "Simular Rede" na barra superior, os contadores disparam e o mapa e os gráficos ganham vida na hora com perfis institucionais anônimos ("Pesquisador(a) Egresso(a) #01" etc.) para você demonstrar os filtros funcionando ao vivo.
+
+Depois de colar no index.html e salvar no GitHub, lembre-se de acessar usando ?v=3 no final do link no celular para carregar na hora!
+
+Se eu copiar vai copiar na hora de colar. Consegue mandar o index.html?
+
+O seu arquivo HTML está pronto:
+
+Ícone do app HTML
+index
+ HTML 
+Como subir para o GitHub pelo celular (sem precisar copiar e colar texto):
+Toque no arquivo index.html acima para baixá-lo no seu aparelho.
+
+Abra o seu repositório no GitHub, toque no botão + (ou Add file) > Upload files.   
+113957.jpg
++ 1
+
+Selecione o arquivo index.html que você acabou de baixar e toque no botão verde Commit changes lá embaixo (ele substitui o antigo automaticamente).   
+README.md
+
+Aguarde cerca de 1 minuto e acesse o link do site colocando ?v=4 no final do endereço para atualizar na hora.
+
+
+
+
+
+O Gemini é uma IA e pode cometer erros.
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>Rede de Egressos · PPG-CTM | IPRJ-UERJ</title>
+  <meta name="description" content="Plataforma oficial da Rede de Egressos do Programa de Pós-Graduação em Ciência e Tecnologia de Materiais do IPRJ-UERJ.">
+
+  <!-- Fontes Oficiais do Projeto -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+  <!-- Mapa Interativo (Leaflet) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+
+  <style>
+    /* Paleta Oficial do PPG-CTM (Magenta, Violeta e Neutros Arroxeados) */
+    :root {
+      --bg: #f6f3f9;
+      --surface: #ffffff;
+      --surface-glass: rgba(255, 255, 255, 0.82);
+      --fg: #1e1631;
+      --muted: #655c7b;
+      --line: #ded7ea;
+      --accent: #a8206f;
+      --accent-ink: #ffffff;
+      --accent-soft: #f6dfee;
+      --violet: #5b3fa6;
+      --violet-soft: #e6e0f6;
+      --land: #ebe6f4;
+      --land-line: #c9bfdd;
+      --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+      --font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      --font-mono: "IBM Plex Mono", monospace;
+      --shadow-sm: 0 4px 16px rgba(30, 22, 49, 0.05);
+      --shadow-lg: 0 16px 40px rgba(91, 63, 166, 0.12);
+      --radius: 14px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #130e20;
+        --surface: #1c1630;
+        --surface-glass: rgba(28, 22, 48, 0.82);
+        --fg: #f0ebf8;
+        --muted: #a79fbd;
+        --line: #33284b;
+        --accent: #ea5fae;
+        --accent-ink: #1a0b14;
+        --accent-soft: #3b1c33;
+        --violet: #a58cf0;
+        --violet-soft: #2b2250;
+        --land: #221a38;
+        --land-line: #3d3160;
+        --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Fundo Animado com Orbes da Paleta */
+    .bg-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.22;
+      animation: floatOrb 18s infinite alternate ease-in-out;
+    }
+    .orb-1 {
+      width: 420px; height: 420px;
+      background: var(--accent);
+      top: -120px; right: -80px;
+    }
+    .orb-2 {
+      width: 380px; height: 380px;
+      background: var(--violet);
+      bottom: 10%; left: -120px;
+      animation-delay: -7s;
+    }
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-40px, 50px) scale(1.12); }
+      100% { transform: translate(30px, -30px) scale(0.95); }
+    }
+
+    /* Navegação Glassmorphism */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--surface-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+      transition: all 0.3s ease;
+    }
+    .nav-wrap {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      overflow-x: auto;
+    }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.15rem;
+      color: var(--fg);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+    .brand-badge {
+      background: linear-gradient(135deg, var(--accent), var(--violet));
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      padding: 4px 9px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+    }
+    .nav-links {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      padding: 7px 12px;
+      border-radius: 8px;
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    .nav-links a:hover {
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    /* Botão de Simulação para Apresentação */
+    .pres-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--violet);
+      background: var(--violet-soft);
+      border: 1px solid var(--line);
+      padding: 6px 12px;
+      border-radius: 99px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    .pres-toggle:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+    .pres-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: all 0.3s ease;
+    }
+    .pres-toggle.active {
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: var(--accent);
+    }
+    .pres-toggle.active .pres-dot {
+      background: #fff;
+      box-shadow: 0 0 8px #fff;
+    }
+
+    .wrap {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 20px 64px;
+    }
+
+    /* Animações de Entrada (Scroll Reveal) */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .delay-1 { transition-delay: 0.1s; }
+    .delay-2 { transition-delay: 0.2s; }
+    .delay-3 { transition-delay: 0.3s; }
+
+    /* Hero Section */
+    header.hero {
+      padding: 56px 0 44px;
+      border-bottom: 1px solid var(--line);
+    }
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--violet);
+      background: var(--violet-soft);
+      padding: 6px 14px;
+      border-radius: 99px;
+      margin-bottom: 18px;
+    }
+    .pulse-dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(168, 32, 111, 0.6); }
+      70% { box-shadow: 0 0 0 8px rgba(168, 32, 111, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(168, 32, 111, 0); }
+    }
+
+    header.hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.3rem, 5.5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.06;
+      letter-spacing: -0.025em;
+      margin-bottom: 18px;
+    }
+    header.hero h1 em {
+      font-style: normal;
+      background: linear-gradient(120deg, var(--accent), var(--violet));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header.hero p {
+      font-size: 1.08rem;
+      color: var(--muted);
+      max-width: 65ch;
+      margin-bottom: 28px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 42px;
+    }
+    .btn {
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 12px 22px;
+      border-radius: 10px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      border: 1.5px solid var(--accent);
+      background: var(--accent);
+      color: var(--accent-ink);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px -6px rgba(168, 32, 111, 0.5);
+    }
+    .btn.ghost {
+      background: transparent;
+      color: var(--accent);
+    }
+    .btn.ghost:hover {
+      background: var(--accent-soft);
+      box-shadow: none;
+    }
+
+    /* Indicadores Animados */
+    .figures {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+    }
+    .fig {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .fig::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--violet));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.35s ease;
+    }
+    .fig:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent);
+      box-shadow: var(--shadow-lg);
+    }
+    .fig:hover::after { transform: scaleX(1); }
+    .fig b {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+    .fig span {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* Seções */
+    section {
+      padding-top: 56px;
+      scroll-margin-top: 70px;
+    }
+    .sec-head { margin-bottom: 24px; }
+    .sec-head h2 {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .sec-head p {
+      color: var(--muted);
+      max-width: 66ch;
+    }
+
+    /* Barra de Filtros */
+    .filters {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+      display: grid;
+      gap: 12px;
+    }
+    .filters .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    input[type="search"], select {
+      font: 400 0.95rem var(--font-body);
+      color: var(--fg);
+      background: var(--bg);
+      border: 1.5px solid var(--line);
+      border-radius: 8px;
+      padding: 11px 14px;
+      width: 100%;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="search"]:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .filters select {
+      width: auto;
+      flex: 1 1 170px;
+    }
+    .check {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .check input {
+      width: 18px; height: 18px;
+      accent-color: var(--accent);
+    }
+
+    /* Board: Mapa + Diretório */
+    .board {
+      display: grid;
+      gap: 24px;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+    }
+    @media (min-width: 900px) {
+      .board { grid-template-columns: 5fr 6fr; }
+      .mapcol { position: sticky; top: 82px; }
+    }
+
+    .mapbox, .box {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.3s ease;
+    }
+    .mapbox:hover, .box:hover { box-shadow: var(--shadow-lg); }
+    .mapbox h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .mapbox small {
+      color: var(--muted);
+      display: block;
+      margin-bottom: 12px;
+    }
+    #map {
+      width: 100%;
+      height: 350px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--land);
+      z-index: 1;
+    }
+    .chips-title {
+      font: 600 0.74rem var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-top: 14px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .chip {
+      font: 500 0.8rem var(--font-mono);
+      border: 1.5px solid var(--line);
+      background: var(--bg);
+      color: var(--fg);
+      border-radius: 999px;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .chip:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .chip.on {
+      background: var(--violet);
+      border-color: var(--violet);
+      color: #fff;
+    }
+
+    /* Lista e Cards de Egressos */
+    .listhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .listhead span {
+      font: 500 0.85rem var(--font-mono);
+      color: var(--muted);
+    }
+    .listhead button {
+      font: 600 0.85rem var(--font-body);
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .cards {
+      display: grid;
+      gap: 12px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px;
+      display: grid;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      animation: cardFadeIn 0.45s ease backwards;
+    }
+    @keyframes cardFadeIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: var(--shadow-lg);
+    }
+    .card .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .card h3 { font-size: 1.15rem; font-family: var(--font-display); }
+    .card .yr {
+      font: 500 0.78rem var(--font-mono);
+      color: var(--violet);
+      background: var(--violet-soft);
+      padding: 3px 9px;
+      border-radius: 99px;
+    }
+    .card .role { font-weight: 600; color: var(--accent); font-size: 0.94rem; }
+    .card .where { color: var(--muted); font-size: 0.88rem; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      font: 500 0.74rem var(--font-mono);
+      padding: 4px 9px;
+      border-radius: 6px;
+      background: var(--violet-soft);
+      color: var(--violet);
+    }
+    .tag.m {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .card .thesis {
+      font-size: 0.88rem;
+      color: var(--muted);
+      border-top: 1px dashed var(--line);
+      padding-top: 10px;
+      margin-top: 4px;
+    }
+    .card .thesis i { color: var(--fg); font-style: normal; font-weight: 600; }
+    .card .links { display: flex; gap: 16px; font-size: 0.88rem; font-weight: 600; margin-top: 4px; }
+    .card .links a { color: var(--accent); text-decoration: none; }
+    .card .links a:hover { text-decoration: underline; }
+
+    /* Estado Limpo (Pronto para Apresentação) */
+    .empty-state {
+      padding: 38px 24px;
+      border: 1.5px dashed var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      text-align: center;
+      color: var(--muted);
+    }
+    .empty-state h4 {
+      font-family: var(--font-display);
+      color: var(--fg);
+      font-size: 1.15rem;
+      margin-bottom: 6px;
+    }
+    .empty-state p {
+      font-size: 0.92rem;
+      max-width: 48ch;
+      margin: 0 auto 16px;
+    }
+
+    /* Painel de Gráficos com Barras Animadas */
+    .panel-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+    .bars { display: grid; gap: 12px; margin-top: 14px; }
+    .bar {
+      display: grid;
+      grid-template-columns: minmax(0, 145px) 1fr 34px;
+      gap: 10px;
+      align-items: center;
+      font-size: 0.88rem;
+    }
+    .bar .track {
+      height: 11px;
+      background: var(--land);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .bar .fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--violet));
+      border-radius: 99px;
+      width: 0;
+      transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .bar b {
+      font: 600 0.84rem var(--font-mono);
+      text-align: right;
+    }
+
+    /* Grid de 2 Colunas */
+    .two {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+    .box { display: grid; gap: 12px; align-content: start; }
+    .box h3 { font-size: 1.2rem; font-family: var(--font-display); }
+    .box p { color: var(--muted); }
+    ul.plain { padding-left: 18px; display: grid; gap: 8px; color: var(--muted); }
+
+    footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.86rem;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Orbes Flutuantes de Fundo -->
+  <div class="bg-glow">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+
+  <!-- Barra de Navegação -->
+  <nav class="navbar">
+    <div class="nav-wrap">
+      <a href="#" class="brand">
+        <span class="brand-badge">PPG-CTM</span>
+        IPRJ · UERJ
+      </a>
+      <div class="nav-links">
+        <a href="#egressos">Egressos</a>
+        <a href="#painel">Painel</a>
+        <a href="#oportunidades">Oportunidades</a>
+        <a href="#forum">Fórum & Chat</a>
+        <a href="#cadastro">Meu Cadastro</a>
+        <a href="#sobre">Sobre</a>
+        <button type="button" class="pres-toggle" id="btn-simular" title="Alternar visualização de demonstração para apresentação">
+          <span class="pres-dot"></span>
+          <span id="sim-label">Simular Rede</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <!-- Cabeçalho Principal -->
+    <header class="hero reveal">
+      <div class="tag-pill">
+        <span class="pulse-dot"></span>
+        Programa de Pós-Graduação em Ciência e Tecnologia de Materiais
+      </div>
+      <h1>Rede de Egressos<br><em>PPG-CTM</em> · IPRJ-UERJ</h1>
+      <p>Quem passou pelo mestrado em Ciência e Tecnologia de Materiais: onde mora, onde trabalha, se seguiu para o doutorado e como pode apoiar quem está chegando agora ao programa.</p>
+
+      <div class="cta-row">
+        <a class="btn" href="#cadastro">Fazer meu cadastro (3 min)</a>
+        <a class="btn ghost" href="#egressos">Explorar mapa da rede</a>
+      </div>
+
+      <div class="figures" aria-live="polite">
+        <div class="fig reveal delay-1">
+          <b id="n-total">0</b>
+          <span>egressos na rede</span>
+        </div>
+        <div class="fig reveal delay-2">
+          <b id="n-area">0</b>
+          <span>atuam com materiais ou modelagem</span>
+        </div>
+        <div class="fig reveal delay-3">
+          <b id="n-phd">0</b>
+          <span>seguiram para o doutorado</span>
+        </div>
+        <div class="fig reveal delay-3">
+          <b id="n-cities">0</b>
+          <span>cidades e países mapeados</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Seção Egressos & Mapa -->
+    <section id="egressos" class="reveal">
+      <div class="sec-head">
+        <h2>Diretório de Egressos</h2>
+        <p>Busque por nome, cidade, instituição, orientador, título ou linha de pesquisa. Clique em uma cidade no mapa para filtrar.</p>
+      </div>
+
+      <div class="filters">
+        <input type="search" id="q" placeholder="Buscar: nome, cidade, empresa, orientador, título…" aria-label="Buscar egressos">
+        <div class="row">
+          <select id="f-setor" aria-label="Setor de atuação"><option value="">Todos os setores</option></select>
+          <select id="f-phd" aria-label="Doutorado">
+            <option value="">Doutorado: todos</option>
+            <option value="sim">Seguiu para o doutorado</option>
+            <option value="nao">Mestrado concluído</option>
+          </select>
+          <select id="f-linha" aria-label="Linha de pesquisa"><option value="">Todas as linhas</option></select>
+          <label class="check"><input type="checkbox" id="f-mentor"> Só quem aceita mentoria</label>
+        </div>
+      </div>
+
+      <div class="board">
+        <div class="mapcol">
+          <div class="mapbox">
+            <h3>Onde os egressos atuam hoje</h3>
+            <small>Mapa interativo da rede. Toque em um marcador ou município abaixo para filtrar.</small>
+            <div id="map"></div>
+            <div class="chips-title">Localidades Mapeadas</div>
+            <div class="chips" id="chips-out"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="listhead">
+            <span id="count">0 egressos</span>
+            <button type="button" id="clear" hidden>Limpar filtros</button>
+          </div>
+          <div class="cards" id="cards"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção Painel -->
+    <section id="painel" class="reveal">
+      <div class="sec-head">
+        <h2>Painel de Indicadores</h2>
+        <p>Síntese quantitativa da atuação profissional e acadêmica dos egressos, atualizada em tempo real conforme os filtros.</p>
+      </div>
+      <div class="panel-grid">
+        <div class="box">
+          <h3>Setor de atuação</h3>
+          <div class="bars" id="bars-setor"></div>
+        </div>
+        <div class="box">
+          <h3>Linha de pesquisa no mestrado</h3>
+          <div class="bars" id="bars-linha"></div>
+        </div>
+        <div class="box">
+          <h3>Egressos por ano de defesa</h3>
+          <div class="bars" id="bars-ano"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção Oportunidades -->
+    <section id="oportunidades" class="reveal">
+      <div class="sec-head">
+        <h2>Oportunidades</h2>
+        <p>Vagas na indústria, bolsas de pós-graduação, estágios e chamadas científicas compartilhadas pela rede.</p>
+      </div>
+      <div class="two" id="ops"></div>
+    </section>
+
+    <!-- Seção Fórum e Chat -->
+    <section id="forum" class="reveal">
+      <div class="sec-head">
+        <h2>Fórum e Comunidade</h2>
+        <p>Canais permanentes para troca de experiências sobre carreira, pesquisa, bolsas e cooperação técnica.</p>
+      </div>
+      <div class="two">
+        <div class="box">
+          <h3>Fórum Acadêmico</h3>
+          <p>Espaço integrado às discussões do repositório para dúvidas sobre ingresso, dissertação, doutorado e mercado de trabalho.</p>
+          <div id="giscus-slot"></div>
+        </div>
+        <div class="box">
+          <h3>Grupo Oficial da Rede</h3>
+          <p id="chat-text">Canal de comunicação direta entre egressos, discentes e coordenação para avisos rápidos e divulgação de vagas.</p>
+          <a class="btn" id="chat-btn" href="#cadastro">Integrar Comunidade</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção Cadastro -->
+    <section id="cadastro" class="reveal">
+      <div class="sec-head">
+        <h2>Meu Cadastro</h2>
+        <p>Leva cerca de 3 minutos. Você escolhe o que aparece na página: só entram na rede os cadastros autorizados e validados pela coordenação.</p>
+      </div>
+      <div class="two">
+        <div class="box">
+          <h3>Informações Mapeadas</h3>
+          <ul class="plain">
+            <li>Nome completo, ano da defesa, título da dissertação, linha de pesquisa e orientador(a)</li>
+            <li>Cidade atual e atuação profissional (setor, empresa ou instituição e cargo)</li>
+            <li>Continuidade acadêmica no doutorado</li>
+            <li>Disponibilidade para mentoria de novos mestrandos</li>
+            <li>Links profissionais para Currículo Lattes e LinkedIn</li>
+          </ul>
+          <p style="font-size:0.85rem;">O endereço de e-mail informado permanece restrito à coordenação do programa e nunca é exibido publicamente (LGPD).</p>
+        </div>
+        <div class="box">
+          <h3>Vincular Perfil à Rede</h3>
+          <p id="form-text">Preencha o formulário institucional da coordenação para incluir ou atualizar sua trajetória profissional na plataforma.</p>
+          <div>
+            <a class="btn" id="form-btn" href="#" target="_blank" rel="noopener">Abrir Formulário de Cadastro</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção Sobre -->
+    <section id="sobre" class="reveal">
+      <div class="sec-head">
+        <h2>Sobre a Iniciativa</h2>
+        <p>Iniciativa do <strong>Programa de Pós-Graduação em Ciência e Tecnologia de Materiais (PPG-CTM · IPRJ/UERJ)</strong> para fortalecer o vínculo com seus egressos, dar visibilidade ao impacto do mestrado e aproximar quem já atua no mercado ou na academia de quem está ingressando.</p>
+      </div>
+      <div class="cta-row" style="margin-bottom:0;">
+        <a class="btn ghost" href="https://www.instagram.com/ppgctm.iprj/" target="_blank" rel="noopener">Instagram @ppgctm.iprj</a>
+      </div>
+    </section>
+
+    <footer>
+      <span><strong>PPG-CTM · Instituto Politécnico da UERJ (IPRJ)</strong> — Nova Friburgo, RJ.</span>
+      <span>Conformidade LGPD: Dados informados pelos egressos e revisados pela coordenação.</span>
+    </footer>
+  </div>
+
+  <!-- Script Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+  <script>
+    /*************************************************************************
+     * CONFIGURAÇÃO OFICIAL DA REDE
+     * Cole abaixo os links oficiais do Google Sheets (CSV) e Google Forms.
+     *************************************************************************/
+    const REDE_CONFIG = {
+      EGRESSOS_CSV_URL: "",
+      OPORTUNIDADES_CSV_URL: "",
+      FORM_URL: "",
+      CHAT_URL: ""
+    };
+
+    // Coordenadas Geográficas do Estado do RJ e Polos Nacionais
+    const COORD = {
+      "nova friburgo": [-22.2819, -42.5311],
+      "rio de janeiro": [-22.9068, -43.1729],
+      "niteroi": [-22.8832, -43.1034],
+      "petropolis": [-22.5046, -43.1823],
+      "macae": [-22.3708, -41.7869],
+      "campos dos goytacazes": [-21.7545, -41.3244],
+      "volta redonda": [-22.5232, -44.1042],
+      "cabo frio": [-22.8794, -42.0186],
+      "resende": [-22.4689, -44.4467],
+      "teresopolis": [-22.4123, -42.9664],
+      "cachoeiras de macacu": [-22.4636, -42.6531],
+      "sao paulo": [-23.5505, -46.6333],
+      "campinas": [-22.9099, -47.0626],
+      "belo horizonte": [-19.9167, -43.9345]
+    };
+
+    // Dados institucionais anônimos APENAS se o botão "Simular Rede" for clicado durante a apresentação
+    const DADOS_SIMULACAO = [
+      { nome: "Pesquisador(a) Egresso(a) #01", ano: 2024, cidade: "Nova Friburgo", uf: "RJ", setor: "Universidade", org: "IPRJ / UERJ", cargo: "Doutorando(a)", phd: "UERJ", titulo: "Modelagem Computacional e Simulação Termomecânica de Materiais", linha: "Modelagem computacional", orientador: "Docente PPG-CTM", mentor: true, linkedin: "", lattes: "http://lattes.cnpq.br" },
+      { nome: "Pesquisador(a) Egresso(a) #02", ano: 2023, cidade: "Macaé", uf: "RJ", setor: "Indústria", org: "Setor de Energia & Óleo e Gás", cargo: "Engenheiro(a) de Materiais", phd: "", titulo: "Avaliação da Resistência à Corrosão e Tribocorrosão em Ligas Inoxidáveis", linha: "Caracterização de materiais", orientador: "Docente PPG-CTM", mentor: true, linkedin: "https://linkedin.com", lattes: "" },
+      { nome: "Pesquisador(a) Egresso(a) #03", ano: 2022, cidade: "Rio de Janeiro", uf: "RJ", setor: "Pesquisa e institutos", org: "Centro de Pesquisa e Desenvolvimento", cargo: "Analista de P&D", phd: "UERJ", titulo: "Simulação Numérica de Escoamento e Transferência de Calor em Processos Metalúrgicos", linha: "Simulação numérica", orientador: "Docente PPG-CTM", mentor: true, linkedin: "https://linkedin.com", lattes: "http://lattes.cnpq.br" },
+      { nome: "Pesquisador(a) Egresso(a) #04", ano: 2021, cidade: "Volta Redonda", uf: "RJ", setor: "Indústria", org: "Setor Siderúrgico", cargo: "Especialista de Processos", phd: "", titulo: "Processamento Termomecânico e Análise Microestrutural de Aços Avançados", linha: "Materiais e processos", orientador: "Docente PPG-CTM", mentor: false, linkedin: "https://linkedin.com", lattes: "" },
+      { nome: "Pesquisador(a) Egresso(a) #05", ano: 2023, cidade: "Niterói", uf: "RJ", setor: "Universidade", org: "Instituição Federal de Ensino", cargo: "Pesquisador(a) Colaborador(a)", phd: "outra", titulo: "Desenvolvimento de Compósitos Poliméricos e Caracterização Mecânica", linha: "Materiais e processos", orientador: "Docente PPG-CTM", mentor: true, linkedin: "", lattes: "http://lattes.cnpq.br" }
+    ];
+
+    const OPS_SIMULACAO = [
+      { titulo: "Chamada para Cadastramento de Oportunidades", org: "Coordenação PPG-CTM · IPRJ/UERJ", tipo: "Institucional", local: "Nova Friburgo, RJ", data: "2026", descricao: "Espaço destinado à divulgação de bolsas de doutorado, pós-doutorado e vagas na indústria indicadas por egressos e parceiros do programa.", link: "#cadastro" }
+    ];
+
+    let DATA_OFICIAL = [];
+    let DATA = [];
+    let OPS = [];
+    let modoSimulacao = false;
+    let map, markersLayer;
+    let state = { q: "", setor: "", phd: "", linha: "", mentor: false, place: "" };
+
+    const $ = id => document.getElementById(id);
+    const norm = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const esc = t => { const d = document.createElement("div"); d.textContent = t || ""; return d.innerHTML; };
+
+    // Animação de Contagem Progressiva nos Indicadores
+    function animateCounter(el, target) {
+      const start = parseInt(el.textContent, 10) || 0;
+      const duration = 650;
+      const startTime = performance.now();
+      function step(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(start + (target - start) * eased);
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    // Inicializa Mapa Leaflet
+    function initMap() {
+      map = L.map("map", { scrollWheelZoom: false }).setView([-22.35, -42.65], 7);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(map);
+      markersLayer = L.layerGroup().addTo(map);
+    }
+
+    // Leitor de CSV do Google Sheets
+    function parseCSV(text) {
+      const rows = []; let row = [], f = "", q = false;
+      text = String(text).replace(/^\uFEFF/, "");
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (q) {
+          if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; }
+          else f += c;
+        } else if (c === '"') q = true;
+        else if (c === ",") { row.push(f); f = ""; }
+        else if (c === "\n" || c === "\r") {
+          if (c === "\r" && text[i + 1] === "\n") i++;
+          row.push(f); f = ""; rows.push(row); row = [];
+        } else f += c;
+      }
+      if (f !== "" || row.length) { row.push(f); rows.push(row); }
+      if (!rows.length) return [];
+      const head = rows[0].map(norm);
+      return rows.slice(1).filter(r => r.some(x => x.trim() !== "")).map(r => {
+        const o = {}; head.forEach((h, idx) => o[h] = (r[idx] || "").trim()); return o;
+      });
+    }
+
+    function matches(r, skipPlace = false) {
+      if (state.q) {
+        const hay = norm([r.nome, r.cidade, r.uf, r.org, r.cargo, r.titulo, r.linha, r.setor, r.orientador].join(" "));
+        if (!hay.includes(norm(state.q))) return false;
+      }
+      if (state.setor && r.setor !== state.setor) return false;
+      if (state.phd === "sim" && !r.phd) return false;
+      if (state.phd === "nao" && r.phd) return false;
+      if (state.linha && r.linha !== state.linha) return false;
+      if (state.mentor && !r.mentor) return false;
+      if (!skipPlace && state.place && norm(r.cidade) !== state.place) return false;
+      return true;
+    }
+
+    function renderFigures() {
+      const places = new Set(DATA.map(r => norm(r.cidade)).filter(Boolean));
+      animateCounter($("n-total"), DATA.length);
+      animateCounter($("n-area"), DATA.filter(r => norm(r.setor) !== "outra area").length);
+      animateCounter($("n-phd"), DATA.filter(r => r.phd).length);
+      animateCounter($("n-cities"), places.size);
+    }
+
+    function renderMap() {
+      markersLayer.clearLayers();
+      const groups = {};
+      DATA.filter(r => matches(r, true)).forEach(r => {
+        const k = norm(r.cidade);
+        if (!k) return;
+        if (!groups[k]) groups[k] = { label: `${r.cidade}${r.uf ? ", " + r.uf : ""}`, n: 0, xy: COORD[k] };
+        groups[k].n++;
+      });
+
+      // Marcador Institucional do Campus IPRJ-UERJ sempre visível
+      const iprjMarker = L.circleMarker([-22.2819, -42.5311], {
+        radius: 6,
+        fillColor: "#5b3fa6",
+        color: "#ffffff",
+        weight: 2,
+        fillOpacity: 0.7
+      }).bindTooltip("<b>Sede PPG-CTM · IPRJ/UERJ</b><br>Nova Friburgo, RJ");
+      markersLayer.addLayer(iprjMarker);
+
+      Object.keys(groups).forEach(k => {
+        const g = groups[k];
+        if (!g.xy) return;
+        const active = state.place === k;
+        const circle = L.circleMarker(g.xy, {
+          radius: 9 + Math.sqrt(g.n) * 4,
+          fillColor: active ? "#5b3fa6" : "#a8206f",
+          color: "#ffffff",
+          weight: 2.5,
+          fillOpacity: 0.9
+        });
+        circle.bindTooltip(`<b>${g.label}</b>: ${g.n} egresso(s)`);
+        circle.on("click", () => { state.place = active ? "" : k; renderAll(); });
+        markersLayer.addLayer(circle);
+      });
+
+      const out = $("chips-out");
+      out.innerHTML = "";
+      const keys = Object.keys(groups).sort((a, b) => groups[b].n - groups[a].n);
+      if (!keys.length) {
+        out.innerHTML = `<span class="chip" style="cursor:default; opacity:0.75;">Sede: Nova Friburgo, RJ (IPRJ/UERJ)</span>`;
+        return;
+      }
+      keys.forEach(k => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip" + (state.place === k ? " on" : "");
+        b.textContent = `${groups[k].label} · ${groups[k].n}`;
+        b.onclick = () => { state.place = state.place === k ? "" : k; renderAll(); };
+        out.appendChild(b);
+      });
+    }
+
+    function renderCards() {
+      const list = DATA.filter(r => matches(r)).sort((a, b) => b.ano - a.ano);
+      $("count").textContent = `${list.length} ${list.length === 1 ? "egresso listado" : "egressos listados"}`;
+      $("clear").hidden = !(state.q || state.setor || state.phd || state.linha || state.mentor || state.place);
+
+      const box = $("cards");
+      if (!DATA.length) {
+        box.innerHTML = `
+          <div class="empty-state">
+            <h4>Base de Dados Pronta para Integração</h4>
+            <p>A plataforma está configurada para sincronizar automaticamente os perfis validados pela coordenação do PPG-CTM via Google Sheets.</p>
+            <button type="button" class="btn ghost" onclick="toggleSimulacao()">Testar Visualização na Apresentação</button>
+          </div>`;
+        return;
+      }
+      if (!list.length) {
+        box.innerHTML = `<div class="empty-state"><h4>Nenhum resultado encontrado</h4><p>Tente remover alguns filtros ou buscar por outro termo.</p></div>`;
+        return;
+      }
+
+      box.innerHTML = list.map((r, idx) => {
+        const phdLabel = r.phd === "UERJ" ? "Doutorado na UERJ" : r.phd ? "Doutorado externo" : "";
+        const role = [r.cargo, r.org].filter(Boolean).join(" · ");
+        return `
+          <article class="card" style="animation-delay:${idx * 0.06}s">
+            <div class="top">
+              <h3>${esc(r.nome)}</h3>
+              ${r.ano ? `<span class="yr">Defesa ${r.ano}</span>` : ""}
+            </div>
+            ${role ? `<div class="role">${esc(role)}</div>` : ""}
+            <div class="where">📍 ${esc(r.cidade)}${r.uf ? ", " + esc(r.uf) : ""}</div>
+            <div class="tags">
+              ${r.setor ? `<span class="tag">${esc(r.setor)}</span>` : ""}
+              ${r.linha ? `<span class="tag">${esc(r.linha)}</span>` : ""}
+              ${phdLabel ? `<span class="tag">${phdLabel}</span>` : ""}
+              ${r.mentor ? `<span class="tag m">✓ Aceita mentoria</span>` : ""}
+            </div>
+            ${r.titulo ? `<div class="thesis"><i>Dissertação:</i> ${esc(r.titulo)}${r.orientador ? `<br><i>Orientação:</i> ${esc(r.orientador)}` : ""}</div>` : ""}
+            ${(r.linkedin || r.lattes) ? `
+              <div class="links">
+                ${r.linkedin ? `<a href="${esc(r.linkedin)}" target="_blank" rel="noopener">LinkedIn ↗</a>` : ""}
+                ${r.lattes ? `<a href="${esc(r.lattes)}" target="_blank" rel="noopener">Currículo Lattes ↗</a>` : ""}
+              </div>` : ""}
+          </article>`;
+      }).join("");
+    }
+
+    function renderBars(id, pairs) {
+      const el = $(id);
+      if (!pairs.length) {
+        el.innerHTML = `<span style="color:var(--muted); font-size:0.86rem;">Aguardando sincronização de dados.</span>`;
+        return;
+      }
+      const max = Math.max(...pairs.map(p => p[1]), 1);
+      el.innerHTML = pairs.map(p => `
+        <div class="bar">
+          <span>${esc(p[0])}</span>
+          <div class="track"><div class="fill" style="width:${(p[1] / max) * 100}%"></div></div>
+          <b>${p[1]}</b>
+        </div>
+      `).join("");
+    }
+
+    function renderPanel() {
+      const rows = DATA.filter(r => matches(r));
+      const tally = key => {
+        const m = {};
+        rows.forEach(r => { const v = r[key] || "Não informado"; m[v] = (m[v] || 0) + 1; });
+        return Object.entries(m).sort((a, b) => b[1] - a[1]);
+      };
+      renderBars("bars-setor", tally("setor"));
+      renderBars("bars-linha", tally("linha"));
+      const anos = tally("ano").sort((a, b) => String(a[0]).localeCompare(String(b[0])));
+      renderBars("bars-ano", anos);
+    }
+
+    function renderOps() {
+      const box = $("ops");
+      const list = OPS.length ? OPS : OPS_SIMULACAO;
+      box.innerHTML = list.map(o => `
+        <article class="card">
+          <div class="top">
+            <h3>${esc(o.titulo)}</h3>
+            ${o.data ? `<span class="yr">${esc(o.data)}</span>` : ""}
+          </div>
+          <div class="role">${esc(o.org)}</div>
+          <div class="tags">
+            ${o.tipo ? `<span class="tag m">${esc(o.tipo)}</span>` : ""}
+            ${o.local ? `<span class="tag">${esc(o.local)}</span>` : ""}
+          </div>
+          ${o.descricao ? `<div class="thesis">${esc(o.descricao)}</div>` : ""}
+        </article>
+      `).join("");
+    }
+
+    function updateSelectOptions() {
+      const fill = (id, label, key) => {
+        const sel = $(id);
+        sel.innerHTML = `<option value="">${label}</option>`;
+        [...new Set(DATA.map(r => r[key]).filter(Boolean))].sort().forEach(v => {
+          const o = document.createElement("option");
+          o.value = v; o.textContent = v; sel.appendChild(o);
+        });
+      };
+      fill("f-setor", "Todos os setores", "setor");
+      fill("f-linha", "Todas as linhas", "linha");
+    }
+
+    function renderAll() {
+      renderFigures();
+      renderMap();
+      renderCards();
+      renderPanel();
+      renderOps();
+    }
+
+    window.toggleSimulacao = function () {
+      modoSimulacao = !modoSimulacao;
+      DATA = modoSimulacao ? DADOS_SIMULACAO : DATA_OFICIAL;
+      const btn = $("btn-simular");
+      btn.classList.toggle("active", modoSimulacao);
+      $("sim-label").textContent = modoSimulacao ? "Simulação Ativa" : "Simular Rede";
+      state = { q: "", setor: "", phd: "", linha: "", mentor: false, place: "" };
+      updateSelectOptions();
+      renderAll();
+    };
+
+    // Inicialização Geral
+    window.addEventListener("DOMContentLoaded", () => {
+      initMap();
+
+      // Configura animação de Scroll Reveal
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) entry.target.classList.add("visible");
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+
+      // Botão de Simulação para Apresentação
+      $("btn-simular").addEventListener("click", window.toggleSimulacao);
+
+      // Links externos se preenchidos
+      if (REDE_CONFIG.FORM_URL) $("form-btn").href = REDE_CONFIG.FORM_URL;
+      if (REDE_CONFIG.CHAT_URL) $("chat-btn").href = REDE_CONFIG.CHAT_URL;
+      $("giscus-slot").innerHTML = `<div class="empty-state" style="padding:20px;"><p style="margin:0;">Integração com GitHub Discussions (Giscus) pronta para ativação no repositório.</p></div>`;
+
+      // Eventos de Filtro
+      $("q").oninput = e => { state.q = e.target.value.trim(); renderAll(); };
+      $("f-setor").onchange = e => { state.setor = e.target.value; renderAll(); };
+      $("f-phd").onchange = e => { state.phd = e.target.value; renderAll(); };
+      $("f-linha").onchange = e => { state.linha = e.target.value; renderAll(); };
+      $("f-mentor").onchange = e => { state.mentor = e.target.checked; renderAll(); };
+      $("clear").onclick = () => {
+        state = { q: "", setor: "", phd: "", linha: "", mentor: false, place: "" };
+        $("q").value = ""; $("f-setor").value = ""; $("f-phd").value = ""; $("f-linha").value = ""; $("f-mentor").checked = false;
+        renderAll();
+      };
+
+      // Se houver CSV oficial configurado, busca da planilha; caso contrário, inicia limpo
+      if (REDE_CONFIG.EGRESSOS_CSV_URL) {
+        fetch(REDE_CONFIG.EGRESSOS_CSV_URL)
+          .then(r => r.text())
+          .then(txt => {
+            DATA_OFICIAL = parseCSV(txt).filter(o => o.nome).map(o => ({
+              nome: o.nome, ano: parseInt(o.ano, 10) || 0, cidade: o.cidade, uf: o.uf,
+              setor: o.setor || "Outra área", org: o.organizacao || o.empresa || "", cargo: o.cargo || "",
+              phd: norm(o.doutorado).startsWith("sim") ? (norm(o.doutorado).includes("uerj") ? "UERJ" : "outra") : "",
+              titulo: o.titulo || "", linha: o.linha || "", orientador: o.orientador || "",
+              mentor: norm(o.mentoria).startsWith("sim"), linkedin: o.linkedin || "", lattes: o.lattes || ""
+            }));
+            DATA = DATA_OFICIAL;
+            $("btn-simular").style.display = "none";
+            updateSelectOptions();
+            renderAll();
+          })
+          .catch(() => renderAll());
+      } else {
+        renderAll();
+      }
     });
   </script>
 </body>
